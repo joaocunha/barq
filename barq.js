@@ -163,6 +163,19 @@
                 }
 
                 return -1;
+            },
+
+            // TODO: use a more reliable method of calculating the width
+            getComputedWidth: function(el) {
+                var computedWidth;
+
+                try {
+                    computedWidth = win.getComputedStyle(el).width;
+                } catch (e) {
+                    computedWidth = el.currentStyle.width;
+                }
+
+                return computedWidth;
             }
         };
 
@@ -298,19 +311,6 @@
             barq.el.list.innerHTML += data;
         };
 
-        // TODO: use a more reliable method of calculating the width
-        barq.getComputedWidth = function(el) {
-            var computedWidth;
-
-            try {
-                computedWidth = win.getComputedStyle(el).width;
-            } catch (e) {
-                computedWidth = el.currentStyle.width;
-            }
-
-            return computedWidth;
-        };
-
         // Repositions and resizes the list when viewport size changes.
         // TODO: This implementation is pretty rough, could do with some love.
         // A good option would be tether.js but it weights ~5kb (more currently more than Barq itself).
@@ -320,7 +320,7 @@
 
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
 
-            var computedWidth = barq.getComputedWidth(barq.el.textInput);
+            var computedWidth = barq.ut.getComputedWidth(barq.el.textInput);
 
             barq.el.list.style.top = topPosition + 'px';
             barq.el.list.style.left = barq.el.textInput.offsetLeft + 'px';
@@ -483,10 +483,3 @@
 
     return barq;
 })(window, document);
-
-// var select = document.querySelector('#barq');
-// var barq = new Barq(select).init();
-
-
-var select2 = document.querySelector('#barq2');
-var barq2 = new Barq(select2).init();
