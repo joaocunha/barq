@@ -4,6 +4,8 @@
  *
  * @author João Cunha - joao@joaocunha.net - twitter.com/@joaocunha
  * @license MIT
+ *
+ * Thanks to all collaborators, specially @Ghostavio, @Ahmad-Dukhan, @kumailht and @gxx
  */
 
 ;(function(win, doc, undefined) {
