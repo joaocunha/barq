@@ -1,6 +1,10 @@
-/*
-    Barq: client-side autocomplete
-*/
+/**
+ * Barq: client-side autocomplete
+ * https://github.com/joaocunha/barq/
+ *
+ * @author João Cunha - joao@joaocunha.net - twitter.com/@joaocunha
+ * @license MIT
+ */
 
 ;(function(win, doc, undefined) {
     'use strict';
