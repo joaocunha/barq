@@ -24,25 +24,20 @@ input {
   font-size: 14px;
 }
 
-/*.barq-list li:nth-child(odd) {
-  background-color: #e8e6e4;
-}*/
-
 .barq-list li.selected {
   font-weight: 700;
-  background-color: #999999 !important;
+  background-color: #999999;
   color: white;
 }
 
 .barq-list li:hover {
   cursor: pointer;
-  background-color: #c5cbcc !important;
+  background-color: #c5cbcc;
 }
 
 .barq-visible-list {
-  border-color: #a8a8a8 !important;
-  border-bottom: 1px solid transparent !important;
-  box-shadow: none !important;
+  border-color: #a8a8a8;
+  border-bottom: 1px solid transparent;
 }
 
 .barq-match {
