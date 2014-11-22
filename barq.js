@@ -447,6 +447,7 @@
 
         // Initial non-dynamic event setup
         barq.setupEvents = function() {
+            // TODO: add keyboard navigation
             barq.ut.addEventListener(barq.el.textInput, 'keyup', function(e) {
                 e = e || win.event;
                 e.keyCode = e.keyCode || e.which;
@@ -468,6 +469,7 @@
 
             // Item selection with clicking/tapping
             barq.ut.addEventListener(barq.el.list, 'click', function(e) {
+                // TODO: might require additional checking if clicked on highlighted text
                 barq.selectListItem(e.target);
             });
 
