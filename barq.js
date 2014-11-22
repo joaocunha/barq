@@ -319,9 +319,9 @@
 
         // Repositions and resizes the list when viewport size changes.
         // TODO: This implementation is pretty rough, could do with some love.
-        // A good option would be tether.js but it weights ~5kb (more currently more than Barq itself).
+        // A good option would be tether.js but it weights ~5kb (more than Barq itself).
         barq.repositionList = function() {
-            // TODO: this is legacy, check if needed
+            // TODO: this page set is legacy, check if needed
             barq.currentPage = 1;
 
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
@@ -449,9 +449,10 @@
         barq.setupEvents = function() {
             barq.ut.addEventListener(barq.el.textInput, 'keyup', function(e) {
                 e = e || win.event;
+                e.keyCode = e.keyCode || e.which;
 
-                // Filter out navigation keys like arrow, home, end, etc
-                var navigationKeys = [37, 38, 39, 40, 16, 17, 18, 20, 91, 93];
+                // Filter out navigation keys like arrows, home, end, etc
+                var navigationKeys = [35, 36, 37, 38, 39, 40, 16, 17, 18, 20, 91, 93];
                 barq.ut.inArray(navigationKeys, e.keyCode) < 0 && barq.updateList();
             });
 
