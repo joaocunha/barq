@@ -123,7 +123,7 @@
         };
 
         // A few tiny crossbrowser DOM utilities so we can drop jQuery
-        barq.ut = {
+        var utils = {
             addEventListener: function(el, eventName, handler) {
                 if (el.addEventListener) {
                     el.addEventListener(eventName, handler);
@@ -214,7 +214,7 @@
             // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
             // We don't remove the base element as it holds the `name` attribute and values,
             // so it's useful in case of form submission.
-            barq.ut.addClass(barq.el.baseField, classNames.hidden);
+            utils.addClass(barq.el.baseField, classNames.hidden);
 
             // Creates the main text input that's gonna be used as an autocomplete
             barq.el.textInput = barq.createTextInput();
@@ -259,7 +259,7 @@
                 input.setAttribute('placeholder', barq.options.arbitraryPlaceholderText);
             } else if (barq.options.useFirstOptionTextAsPlaceholder) {
                 // If null (default), use the first <option> text from the baseField
-                var firstOptionText = barq.ut.getNodeText(barq.el.baseField.options[0]);
+                var firstOptionText = utils.getNodeText(barq.el.baseField.options[0]);
                 input.setAttribute('placeholder', firstOptionText);
             }
 
@@ -273,7 +273,7 @@
 
         // If the base element have an option with selected attribute
         barq.setInitialText = function() {
-            var optionText = barq.ut.getNodeText(barq.el.preSelectedOption);
+            var optionText = utils.getNodeText(barq.el.preSelectedOption);
             barq.el.textInput.value = optionText;
         };
 
@@ -295,20 +295,20 @@
 
         barq.showList = function() {
             barq.repositionList();
-            barq.ut.addClass(barq.el.list, classNames.visible);
-            barq.ut.addClass(barq.el.textInput, classNames.textInputWithList);
+            utils.addClass(barq.el.list, classNames.visible);
+            utils.addClass(barq.el.textInput, classNames.textInputWithList);
 
             // Sets the first item as active, so we can start our navigation from there
-            barq.ut.addClass(barq.el.list.firstChild, classNames.activeItem);
+            utils.addClass(barq.el.list.firstChild, classNames.activeItem);
         };
 
         barq.hideList = function() {
-            barq.ut.removeClass(barq.el.list, classNames.visible);
-            barq.ut.removeClass(barq.el.textInput, classNames.textInputWithList);
+            utils.removeClass(barq.el.list, classNames.visible);
+            utils.removeClass(barq.el.textInput, classNames.textInputWithList);
         };
 
         barq.selectListItem = function(listItem) {
-            var selectedText = barq.ut.getNodeText(listItem);
+            var selectedText = utils.getNodeText(listItem);
 
             // Focus must come before applying the text, so it doesn't select it
             barq.el.textInput.focus();
@@ -355,7 +355,7 @@
 
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
 
-            var computedWidth = barq.ut.getComputedWidth(barq.el.textInput);
+            var computedWidth = utils.getComputedWidth(barq.el.textInput);
 
             barq.el.list.style.top = topPosition + 'px';
             barq.el.list.style.left = barq.el.textInput.offsetLeft + 'px';
@@ -392,7 +392,7 @@
             // initially contains all the values unless otherwise we found a match we override
             var matchedItems, matchingRegex, highlightRegex, formattedMatch;
 
-            searchString = barq.ut.escapeString(searchString);
+            searchString = utils.escapeString(searchString);
 
             if (searchString !== '') {
                 matchingRegex  = new RegExp('<li[^>]*>[^<]*'+searchString+'[^<]*<\/li>', 'gi');
@@ -422,7 +422,7 @@
 
         // Shown when no items were found on a search.
         barq.noResultsFound = function() {
-            var item = barq.ut.stringFormat('<li class="{0}">{1}</li>',
+            var item = utils.stringFormat('<li class="{0}">{1}</li>',
                            classNames.noResults, barq.options.noResultsMessage);
 
             barq.replaceListData(item);
@@ -458,7 +458,7 @@
                 return;
 
             // When the scroll reaches the pagination threshold, we fetch the next resultset
-            } else if (barq.ut.isElementOnViewport(visibleListItems[indexForPaginationThreshold])) {
+            } else if (utils.isElementOnViewport(visibleListItems[indexForPaginationThreshold])) {
 
                 // Keep track of the pagination
                 currentPage++;
@@ -476,7 +476,7 @@
 
         // Initial non-dynamic event setup
         barq.setupEvents = function() {
-            barq.ut.addEventListener(barq.el.textInput, 'keyup', function(e) {
+            utils.addEventListener(barq.el.textInput, 'keyup', function(e) {
                 // Cross browser event object capturing
                 e = e || win.event;
 
@@ -535,31 +535,31 @@
                 }
 
                 // Removes the active class from the currently active item
-                barq.ut.removeClass(activeItem, classNames.activeItem);
+                utils.removeClass(activeItem, classNames.activeItem);
 
                 // Applies the active class on the new item
-                barq.ut.addClass(listItems[itemIndexToActivate], classNames.activeItem);
+                utils.addClass(listItems[itemIndexToActivate], classNames.activeItem);
             });
 
             // Focusing on the input opens up the items list
-            barq.ut.addEventListener(barq.el.textInput, 'focus', function() {
+            utils.addEventListener(barq.el.textInput, 'focus', function() {
                 barq.updateList();
             });
 
             // Needed for pagination
-            barq.ut.addEventListener(barq.el.list, 'scroll', function() {
+            utils.addEventListener(barq.el.list, 'scroll', function() {
                 barq.loadMoreItems();
             });
 
             // Item selection with clicking/tapping
-            barq.ut.addEventListener(barq.el.list, 'click', function(e) {
+            utils.addEventListener(barq.el.list, 'click', function(e) {
                 // TODO: might require additional checking if clicked on highlighted text
                 barq.selectListItem(e.target);
             });
 
             // Hides the autocomplete when clicking outside the element.
             // TODO: make sure clicking on the scrollbar doesn't trigger it
-            barq.ut.addEventListener(doc.documentElement, 'click', function(e) {
+            utils.addEventListener(doc.documentElement, 'click', function(e) {
                 if (e.target == barq.el.textInput || e.target == barq.el.list) {
                     e.stopPropagation();
                 } else {
@@ -568,7 +568,7 @@
             });
 
             // TODO: add debounce() from lodash if we keep the resize event
-            barq.ut.addEventListener(win, 'resize', function() {
+            utils.addEventListener(win, 'resize', function() {
                 barq.repositionList();
             });
         };
