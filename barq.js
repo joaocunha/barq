@@ -223,8 +223,11 @@
             // Only one class ATM, no need for fancy pants .addClass()
             input.setAttribute('class', classNames.textInput);
 
-            // This is the browser autocomplete, nothing to do with the plugin
+            // Prevents some HTML5 trickery to mess with our stuff
+            input.setAttribute('autocapitalize', 'off');
             input.setAttribute('autocomplete', 'off');
+            input.setAttribute('autocorrect', 'off');
+            input.setAttribute('spellcheck', 'false');
 
             // Checks for arbitrary text for the placeholder
             if (barq.options.arbitraryPlaceholderText) {
@@ -553,6 +556,7 @@
                 // ESC closes the auto complete list
                 if (keyPressed === KEYCODES.ESC) {
                     barq.hideList();
+                    return;
                 }
             });
 
@@ -584,7 +588,6 @@
                 barq.loadMoreItems();
             });
 
-            // Item selection with clicking/tapping
             // We used mousedown instead of click to solve a race condition against blur
             // http://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event/10653160#10653160
             utils.addEventListener(barq.el.list, 'mousedown', function(e) {
