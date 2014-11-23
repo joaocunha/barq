@@ -159,6 +159,7 @@
             },
 
             // Adapted from lodash's baseIndexOf()
+            // TODO: check if needed
             inArray: function(array, value) {
                 var index = -1, length = array.length;
 
@@ -187,7 +188,9 @@
 
         // Sets up how the autocomplete should be initialized
         barq.init = function() {
-            // Hides the base field ASAP, as it's gonna be replaced by an autocomplete
+            // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
+            // We don't remove the base element as it holds the `name` attribute and values,
+            // so it's useful in case of form submission.
             barq.ut.addClass(barq.el.baseField, barq.classNames.hidden);
 
             // Creates the main text input that's gonna be used as an autocomplete
@@ -196,10 +199,10 @@
             // Extracts the pre-selected option from the base field, if any
             barq.el.preSelectedOption = barq.el.baseField.querySelector('[selected]');
 
-            // Creates an empty <ul> element to hold the list items
+            // Creates the empty <ul> element to hold the list items
             barq.el.list = barq.createEmptyList();
 
-            // Extracts the items from base field and stores them in memory
+            // Extracts the items from the base field and stores them in memory
             barq.listItems = barq.extractDataFromBaseField();
 
             // Fills the list element with the listItems
@@ -211,10 +214,10 @@
             // Sets an initial selection if there's a preselected value or option
             barq.setInitialText();
 
-            // onload user callback, setting barq as `this`
+            // onload user callback, passing barq as `this`
             barq.options.onload.call(barq);
 
-            // Returns an instance of the the class itself
+            // Returns an instance of itself, so we can access from outside
             return barq;
         };
 
@@ -447,14 +450,45 @@
 
         // Initial non-dynamic event setup
         barq.setupEvents = function() {
-            // TODO: add keyboard navigation
             barq.ut.addEventListener(barq.el.textInput, 'keyup', function(e) {
+                // Cross browser event object capturing
                 e = e || win.event;
-                e.keyCode = e.keyCode || e.which;
 
-                // Filter out navigation keys like arrows, home, end, etc
-                var navigationKeys = [35, 36, 37, 38, 39, 40, 16, 17, 18, 20, 91, 93];
-                barq.ut.inArray(navigationKeys, e.keyCode) < 0 && barq.updateList();
+                // Cross browser key code capturing
+                var pressedKey = e.keyCode || e.which;
+
+                // List of navigation key codes we're interested at
+                var KEYCODES = {
+                    TAB: 9,
+                    ENTER: 13,
+                    ESC: 27,
+                    END: 35,
+                    HOME: 36,
+                    LEFT: 37,
+                    UP: 38,
+                    RIGHT: 39,
+                    DOWN: 40
+                };
+
+                // Any key, except navigation keys like arrows, home, end...
+                for (var key in KEYCODES) {
+                    if (pressedKey !== KEYCODES[key]) {
+                        barq.updateList();
+                        return;
+                    }
+                }
+
+                // ENTER selects the list item
+                if (pressedKey === KEYCODES.ENTER) {
+                    // TODO: Add item selection
+                    return;
+                }
+
+                // ESC closes the auto complete list
+                if (pressedKey === KEYCODES.ESC) {
+                    // TODO: close the list
+                    return;
+                }
             });
 
             // Focusing on the input opens up the items list
@@ -488,7 +522,6 @@
                 barq.repositionList();
             });
         };
-    };
+    }; // end win.Barq()
 
-    return barq;
 })(window, document);
