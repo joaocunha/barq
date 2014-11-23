@@ -1,9 +1,10 @@
 /**
+ * @license MIT
+
  * Barq: client-side autocomplete
  * https://github.com/joaocunha/barq/
  *
  * @author João Cunha - joao@joaocunha.net - twitter.com/@joaocunha
- * @license MIT
  *
  * Thanks to all collaborators, specially @Ghostavio, @Ahmad-Dukhan, @kumailht and @gxx
  */
@@ -454,6 +455,8 @@
         // Initial non-dynamic event setup
         barq.setupEvents = function() {
             barq.ut.addEventListener(barq.el.textInput, 'keyup', function(e) {
+                // TODO: Move the whole navigation logic to its own function
+
                 // Cross browser event object capturing
                 e = e || win.event;
 
