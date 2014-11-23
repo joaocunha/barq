@@ -78,9 +78,9 @@
         };
 
         /**
-            currentPage
-            @type int
-            Pagination counter
+            classNames
+            @type object
+            Holds all the classes to avoid code repetition
         */
         var classNames = {
             selectedListItem: 'barq-selected',
@@ -92,6 +92,23 @@
             activeItem: 'barq-active-item',
             noResults: 'barq-no-results',
             match: 'barq-match'
+        };
+
+        /**
+            KEYCODES
+            @type object
+            List of the navigation key codes we're interested at, in a constant format
+        */
+        var KEYCODES = {
+            TAB: 9,
+            ENTER: 13,
+            ESC: 27,
+            END: 35,
+            HOME: 36,
+            LEFT: 37,
+            UP: 38,
+            RIGHT: 39,
+            DOWN: 40
         };
 
         /**
@@ -460,26 +477,11 @@
         // Initial non-dynamic event setup
         barq.setupEvents = function() {
             barq.ut.addEventListener(barq.el.textInput, 'keyup', function(e) {
-                // TODO: Move the whole navigation logic to its own function
-
                 // Cross browser event object capturing
                 e = e || win.event;
 
                 // Cross browser key code capturing
                 var pressedKey = e.keyCode || e.which;
-
-                // List of the navigation key codes we're interested at
-                var KEYCODES = {
-                    TAB: 9,
-                    ENTER: 13,
-                    ESC: 27,
-                    END: 35,
-                    HOME: 36,
-                    LEFT: 37,
-                    UP: 38,
-                    RIGHT: 39,
-                    DOWN: 40
-                };
 
                 // Filter out navigation keys
                 var isNavigationKey = false;
