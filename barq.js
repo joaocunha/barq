@@ -454,9 +454,8 @@
             // Stores the previsouly fetched elements
             var visibleListItems = barq.el.list.children;
 
-            // Pagination is triggered when scrolling reaches the middle of the list.
-            // This makes the scrolling smooth as we load the next resultset before reaching the end.
-            var indexForPaginationThreshold = visibleListItems.length - (barq.options.resultsPerPage / 2);
+            // Pagination is triggered when scrolling reaches the last item.
+            var indexForPaginationThreshold = visibleListItems.length - 1;
 
             // Not enough elements to require pagination
             if (indexForPaginationThreshold < 0) {
