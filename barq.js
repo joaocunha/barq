@@ -303,12 +303,16 @@
             // Hides the list as we don't need it anymore
             barq.hideList();
 
+            var val = listItem.getAttribute('data-value');
+
             // Set the value back on the baseField
-            barq.el.baseField.value = listItem.getAttribute('data-value');
+            barq.el.baseField.value = val;
+
+            // Store the value on Barq itself
+            barq.value = val;
 
             // onchange user callback
             barq.options.onchange.call(barq);
-            console.log(listItem);
         };
 
         // Creates an empty <ul> element and inserts it after the base element.
@@ -588,8 +592,9 @@
 
             // Item selection with clicking/tapping
             utils.addEventListener(barq.el.list, 'click', function(e) {
-                // TODO: might require additional checking if clicked on highlighted text
-                barq.selectListItem(e.target);
+                // Checks if the click was performed on the highlighted part
+                var item = e.target.className === classNames.match ? e.target.parentNode : e.target;
+                barq.selectListItem(item);
             });
 
             // Hides the autocomplete when clicking outside the element.
