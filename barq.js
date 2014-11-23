@@ -83,7 +83,6 @@
             Holds all the classes to avoid code repetition
         */
         var classNames = {
-            selectedListItem: 'barq-selected',
             dropdownList: 'barq-list',
             textInput: 'barq-text-input',
             textInputWithList: 'barq-input-text-expanded',
