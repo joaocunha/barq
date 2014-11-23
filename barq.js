@@ -341,11 +341,15 @@
             barq.el.list.style.width = barq.el.textInput.offsetWidth + 'px';
         };
 
-        // Calls the regex comparison (searchListItem)and updates the list with the search results.
+        // Calls the regex comparison (searchListItem) and updates the list with the search results.
         barq.filterList = function(searchString) {
-            var queryOffset = 0,
-                queryLimit = (barq.options.resultsPerPage);
+            // Where the cursor starts
+            var queryOffset = 0;
 
+            // Number of results we'll fetch per page
+            var queryLimit = (barq.options.resultsPerPage);
+
+            // Filtering results
             var matchedElements = barq.searchListItem(searchString, queryOffset, queryLimit);
 
             if (matchedElements) {
