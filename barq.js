@@ -387,13 +387,14 @@
 
         // TODO: looks uber ugly, can definitely be improved.
         // TODO: maybe the splice can also be done with regex.
-        // TODO: the logic for an empty string (run onFocus) is just to bring all items (spliced, if there is pagination). Can be improved.
         barq.searchListItem = function(searchString, offset, limit) {
             // initially contains all the values unless otherwise we found a match we override
             var matchedItems, matchingRegex, highlightRegex, formattedMatch;
 
             searchString = utils.escapeString(searchString);
 
+            // TODO: the logic for an empty string (run onFocus) is just to bring all
+            // items (spliced, if there is pagination). Can be improved.
             if (searchString !== '') {
                 matchingRegex  = new RegExp('<li[^>]*>[^<]*'+searchString+'[^<]*<\/li>', 'gi');
                 highlightRegex = new RegExp('(<li[^>]*>[^<]*)('+searchString+')([^<]*<\/li>)', 'gi');
@@ -434,8 +435,12 @@
 
             if (matches) {
                 barq.showList();
+
+                // Stores a DOM representation of the items every time a search is performed
+                barq.el.currentListItemsDOM = barq.el.list.childNodes;
             } else {
                 barq.noResultsFound();
+                barq.el.currentListItemsDOM = null;
             }
         };
 
@@ -474,6 +479,39 @@
             }
         };
 
+        barq.keyboardNavigate = function(keyPressed) {
+            // The stored search results
+            var items = barq.el.currentListItemsDOM;
+
+            // Stores the currently active item
+            // TODO: might collide with other instances of Barq
+            var activeItem = doc.querySelector('.' + classNames.activeItem);
+
+            // The index of the active element will be the start of the navigation
+            var activeItemIndex = Array.prototype.indexOf.call(items, activeItem);
+
+            // The now active item
+            var itemIndexToActivate = 0;
+
+            // UP navigates one item up
+            if (keyPressed === KEYCODES.UP) {
+                // If it's the first list item, we activate the last one
+                itemIndexToActivate = (activeItemIndex === 0) ? items.length - 1 : activeItemIndex - 1;
+            } else {
+                // If we reach the last item, scroll back to the first
+                itemIndexToActivate = (activeItemIndex === items.length - 1) ? 0 : activeItemIndex + 1;
+            }
+
+            // Removes the active class from the currently active item
+            utils.removeClass(activeItem, classNames.activeItem);
+
+            // Applies the active class on the new item
+            utils.addClass(items[itemIndexToActivate], classNames.activeItem);
+
+            //TODO: list scrolling
+
+        }
+
         // Initial non-dynamic event setup
         barq.setupEvents = function() {
             utils.addEventListener(barq.el.textInput, 'keyup', function(e) {
@@ -481,12 +519,12 @@
                 e = e || win.event;
 
                 // Cross browser key code capturing
-                var pressedKey = e.keyCode || e.which;
+                var keyPressed = e.keyCode || e.which;
 
                 // Filter out navigation keys
                 var isNavigationKey = false;
                 for (var key in KEYCODES) {
-                    if (pressedKey === KEYCODES[key]) {
+                    if (keyPressed === KEYCODES[key]) {
                         isNavigationKey = true;
                         break;
                     }
@@ -499,46 +537,20 @@
                 }
 
                 // ENTER selects the list item
-                if (pressedKey === KEYCODES.ENTER) {
+                if (keyPressed === KEYCODES.ENTER) {
                     return;
                 }
 
                 // ESC closes the auto complete list
-                if (pressedKey === KEYCODES.ESC) {
+                if (keyPressed === KEYCODES.ESC) {
                     return;
                 }
 
-                // TODO: we currently store an HTML string of items. Consider storing an
-                // up to date DOM representation as well, maybe after search/filtering
-                var listItems = barq.el.list.childNodes;
-
-                // Stores the currently active item
-                // TODO: might collide with multiple instances
-                var activeItem = doc.querySelector('.' + classNames.activeItem);
-
-                // The index of the active element will be the start of the navigation
-                var activeItemIndex = Array.prototype.indexOf.call(listItems, activeItem);
-
-                // The now active item
-                var itemIndexToActivate = 0;
-
-                // UP navigates one item up
-                if (pressedKey === KEYCODES.UP) {
-                    // If it's the first list item, we activate the last one
-                    itemIndexToActivate = (activeItemIndex === 0) ? listItems.length - 1 : activeItemIndex - 1;
+                // UP or DOWN arrows navigate through the list
+                if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
+                    barq.keyboardNavigate(keyPressed);
+                    return;
                 }
-
-                // DOWN navigates one item down
-                if (pressedKey === KEYCODES.DOWN) {
-                    // If we reach the last item, scroll back to the first
-                    itemIndexToActivate = (activeItemIndex === listItems.length - 1) ? 0 : activeItemIndex + 1;
-                }
-
-                // Removes the active class from the currently active item
-                utils.removeClass(activeItem, classNames.activeItem);
-
-                // Applies the active class on the new item
-                utils.addClass(listItems[itemIndexToActivate], classNames.activeItem);
             });
 
             // Focusing on the input opens up the items list
