@@ -484,6 +484,7 @@
             // The now active item (safe initial value)
             var itemIndexToActivate = activeItemIndex;
 
+            // Prevent looping from first to last / last to first
             if (keyPressed === KEYCODES.UP) {
                 // Actives the previous item only if it's not the first item of the list
                 (itemIndexToActivate > 0) && itemIndexToActivate--;
