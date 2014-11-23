@@ -181,20 +181,6 @@
                 return s;
             },
 
-            // Adapted from lodash's baseIndexOf()
-            // TODO: check if needed
-            inArray: function(array, value) {
-                var index = -1, length = array.length;
-
-                while (++index < length) {
-                    if (array[index] === value) {
-                        return index;
-                    }
-                }
-
-                return -1;
-            },
-
             // TODO: use a more reliable method of calculating the width
             getComputedWidth: function(el) {
                 var computedWidth;
