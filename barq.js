@@ -308,6 +308,7 @@
 
             // onchange user callback
             barq.options.onchange.call(barq);
+            console.log(listItem);
         };
 
         // Creates an empty <ul> element and inserts it after the base element.
@@ -544,7 +545,7 @@
                     }
                 }
 
-                // Any key, except navigation keys like arrows, home, end...
+                // Any key, except navigation keys like arrows, home, end, enter, esc...
                 if (!isNavigationKey) {
                     barq.updateList();
                     return;
@@ -552,6 +553,7 @@
 
                 // ENTER selects the list item
                 if (keyPressed === KEYCODES.ENTER) {
+                    barq.selectListItem(doc.querySelector('.' + classNames.activeItem));
                     return;
                 }
 
@@ -559,11 +561,18 @@
                 if (keyPressed === KEYCODES.ESC) {
                     return;
                 }
+            });
+
+            utils.addEventListener(barq.el.textInput, 'keydown', function(e) {
+                // Cross browser event object capturing
+                e = e || win.event;
+
+                // Cross browser key code capturing
+                var keyPressed = e.keyCode || e.which;
 
                 // UP or DOWN arrows navigate through the list
                 if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
                     barq.keyboardNavigate(keyPressed);
-                    return;
                 }
             });
 
