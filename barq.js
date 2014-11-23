@@ -445,17 +445,16 @@
         };
 
         // Pagination
-        // TODO: looks bad, could do with some <3
-        // TODO: the current way of fetching more results is based on having an item on the viewport. Sometimes
-        // the user scrolls fast enough and skip the item, not triggering the pagination. Find a better alternative.
+        // TODO: the current way of fetching more results is based on having an item on the viewport.
+        // Maybe there is a better alternative.
         barq.loadMoreItems = function() {
             if (!barq.options.enablePagination) return;
 
             // Stores the previsouly fetched elements
             var visibleListItems = barq.el.list.children;
 
-            // Pagination is triggered when scrolling reaches the last item.
-            var indexForPaginationThreshold = visibleListItems.length - 1;
+            // Pagination is triggered when scrolling reaches the second last item.
+            var indexForPaginationThreshold = visibleListItems.length - 2;
 
             // Not enough elements to require pagination
             if (indexForPaginationThreshold < 0) {
