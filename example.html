@@ -9,7 +9,8 @@
 <body>
     <h3>How about ALL the 2509 airports in the world?</h3>
     <p>The first 5 items have mixed values so we can test the regex.</p>
-    <select data-field-type="autocomplete-static" id="barq" name="test">
+
+    <select id="barq">
         <option>Select an airport</option>
         <option value="1">Aalborg, Denmark (AAL)</option>
         <option value="2">Aalesund, Norway (AES)</option>
@@ -2522,11 +2523,29 @@
         <option value="">Zurich, Switzerland (ZRH)</option>
     </select>
 
+
+    <select id="barq2">
+        <option>Select an airport</option>
+        <option value="1">Aalborg, Denmark (AAL)</option>
+        <option value="2">Aalesund, Norway (AES)</option>
+        <option value="ds">Aarhus, Denmark – Bus service (ZID)</option>
+        <option value="4">Aarhus, Denmark – Tirstrup (AAR)</option>
+        <option>Aasiaat, Greenland (JEG)</option>
+        <option value="">Abadan, Iran (ABD)</option>
+        <option value="">Abakan, Russia (ABA)</option>
+        <option value="">Aberdeen, United Kingdom (ABZ)</option>
+    </select>
+
+
+
     <script type="text/javascript" src="barq.js"></script>
 
     <script type="text/javascript">
         var select = document.querySelector('#barq');
         var barq = new Barq(select).init();
+
+        var select2 = document.querySelector('#barq2');
+        var barq2 = new Barq(select2).init();
     </script>
 </body>
 </html>
