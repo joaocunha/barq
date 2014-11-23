@@ -331,8 +331,7 @@
         };
 
         // Repositions and resizes the list when viewport size changes.
-        // TODO: This implementation is pretty rough, could do with some love.
-        // A good option would be tether.js but it weights ~5kb (more than Barq itself).
+        // A good option would be tether.js but it weights ~5kb (more than Barq itself) :(
         barq.repositionList = function() {
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
 
