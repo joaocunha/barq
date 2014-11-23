@@ -6,7 +6,7 @@
  *
  * @author João Cunha - joao@joaocunha.net - twitter.com/@joaocunha
  *
- * Thanks to all collaborators, specially @Ghostavio, @Ahmad-Dukhan, @kumailht and @gxx
+ * Thanks to all contributors, specially @Ahmad-Dukhan, @Ghostavio, @kumailht and @gxx
  */
 
 ;(function(win, doc, undefined) {
@@ -469,6 +469,9 @@
         };
 
         barq.keyboardNavigate = function(keyPressed) {
+            // No results, prevent navigation
+            if (!barq.el.currentListItemsDOM) { return; }
+
             // The stored search results
             var items = barq.el.currentListItemsDOM;
 
