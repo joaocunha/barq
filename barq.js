@@ -229,6 +229,13 @@
             input.setAttribute('autocorrect', 'off');
             input.setAttribute('spellcheck', 'false');
 
+            // Replicates the tabindex from the basefield...
+            input.setAttribute('tabindex', barq.el.baseField.tabIndex);
+
+            // ...and removes it from the basefield
+            // http://stackoverflow.com/a/5192919/1411163
+            barq.el.baseField.setAttribute('tabindex', '-1');
+
             // Checks for arbitrary text for the placeholder
             if (barq.options.arbitraryPlaceholderText) {
                 input.setAttribute('placeholder', barq.options.arbitraryPlaceholderText);
