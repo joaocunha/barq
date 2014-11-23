@@ -490,16 +490,15 @@
             // The index of the active element will be the start of the navigation
             var activeItemIndex = Array.prototype.indexOf.call(items, activeItem);
 
-            // The now active item
-            var itemIndexToActivate = 0;
+            // The now active item (safe initial value)
+            var itemIndexToActivate = activeItemIndex;
 
-            // UP navigates one item up
             if (keyPressed === KEYCODES.UP) {
-                // If it's the first list item, we activate the last one
-                itemIndexToActivate = (activeItemIndex === 0) ? items.length - 1 : activeItemIndex - 1;
+                // Actives the previous item only if it's not the first item of the list
+                (itemIndexToActivate > 0) && itemIndexToActivate--;
             } else {
-                // If we reach the last item, scroll back to the first
-                itemIndexToActivate = (activeItemIndex === items.length - 1) ? 0 : activeItemIndex + 1;
+                // Don't activate the next item if it's the last one
+                (itemIndexToActivate < items.length - 1) && itemIndexToActivate++;
             }
 
             // Removes the active class from the currently active item
@@ -508,9 +507,40 @@
             // Applies the active class on the new item
             utils.addClass(items[itemIndexToActivate], classNames.activeItem);
 
-            //TODO: list scrolling
+            // Stores the new active item globally
+            barq.activeItem = items[itemIndexToActivate];
 
+            // Scrolls the list to show the item
+            barq.scrollListItemIntoView(barq.activeItem);
         }
+
+        barq.scrollListItemIntoView = function(item) {
+            // Stores the item `top` position on the list
+            var itemTop = item.offsetTop;
+
+            // Stores the active item `height`
+            var itemHeight = item.offsetHeight;
+
+            // Stores the list height
+            var listHeight = barq.el.list.offsetHeight;
+
+            // Stores the scroll position of the list
+            var listScroll = barq.el.list.scrollTop;
+
+            // Check if the item is BEFORE the list scroll area (visible elements)
+            var itemIsBeforeScrollArea = itemTop <= listScroll;
+
+            // Check if the item is AFTER the list scroll area (visible elements)
+            var itemIsAfterScrollArea = itemTop >= ((listScroll + listHeight ) - itemHeight);
+
+            if (itemIsBeforeScrollArea) {
+                // Scroll the list UP to show the active item on top
+                barq.el.list.scrollTop = itemTop;
+            } else if (itemIsAfterScrollArea) {
+                // Scrolls the list DOWN to show the active item on bottom
+                barq.el.list.scrollTop = (itemTop - listHeight) + itemHeight;
+            }
+        };
 
         // Initial non-dynamic event setup
         barq.setupEvents = function() {

@@ -13,7 +13,7 @@ input {
   border: 1px solid #a8a8a8;
   border-top: none;
   overflow: auto;
-  max-height: 14.25em;
+  max-height: 15.5em;
   position: absolute;
   z-index: 90;
 }
