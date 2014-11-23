@@ -283,8 +283,7 @@
         barq.selectListItem = function(listItem) {
             var selectedText = utils.getNodeText(listItem);
 
-            // Focus must come before applying the text, so it doesn't select it
-            barq.el.textInput.focus();
+            // Sets the selected item's text on the input
             barq.el.textInput.value = selectedText;
 
             // Stores the text on barq itself
@@ -300,6 +299,9 @@
 
             // Store the value on Barq itself
             barq.value = val;
+
+            // Updates the reference to the activeElement
+            barq.el.activeElement = listItem;
 
             // onchange user callback
             barq.options.onchange.call(barq);
@@ -585,20 +587,17 @@
             });
 
             // Item selection with clicking/tapping
-            utils.addEventListener(barq.el.list, 'click', function(e) {
+            // We used mousedown instead of click to solve a race condition against blur
+            // http://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event/10653160#10653160
+            utils.addEventListener(barq.el.list, 'mousedown', function(e) {
                 // Checks if the click was performed on the highlighted part
                 var item = e.target.className === classNames.match ? e.target.parentNode : e.target;
-                barq.selectListItem(item);
-            });
 
-            // Hides the autocomplete when clicking outside the element.
-            // TODO: make sure clicking on the scrollbar doesn't trigger it
-            utils.addEventListener(doc.documentElement, 'click', function(e) {
-                if (e.target == barq.el.textInput || e.target == barq.el.list) {
-                    e.stopPropagation();
-                } else {
-                    barq.hideList();
-                }
+                // Updates the activeItem
+                barq.el.activeItem = item;
+
+                // Selects it
+                barq.selectListItem(item);
             });
 
             // TODO: add debounce() from lodash if we keep the resize event
