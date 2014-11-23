@@ -1,6 +1,6 @@
 /**
  * @license MIT
-
+ *
  * Barq: client-side autocomplete
  * https://github.com/joaocunha/barq/
  *
