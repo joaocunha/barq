@@ -83,7 +83,7 @@
             textInputWithList: 'barq-input-text-expanded',
             hidden: 'barq-hidden',
             visible: 'barq-visible',
-            selectedItem: 'barq-selected-item',
+            activeItem: 'barq-active-item',
             noResults: 'barq-no-results',
             match: 'barq-match'
         };
@@ -480,13 +480,21 @@
 
                 // ENTER selects the list item
                 if (pressedKey === KEYCODES.ENTER) {
-                    // TODO: Add item selection
                     return;
                 }
 
                 // ESC closes the auto complete list
                 if (pressedKey === KEYCODES.ESC) {
-                    // TODO: close the list
+                    return;
+                }
+
+                // UP navigates one item up
+                if (pressedKey === KEYCODES.UP) {
+                    return;
+                }
+
+                // DOWN navigates one item down
+                if (pressedKey === KEYCODES.DOWN) {
                     return;
                 }
             });
