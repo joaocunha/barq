@@ -77,6 +77,11 @@
             onchange: opts.onchange || function(){}
         };
 
+        /**
+            currentPage
+            @type int
+            Pagination counter
+        */
         var classNames = {
             selectedListItem: 'barq-selected',
             dropdownList: 'barq-list',
@@ -94,7 +99,7 @@
             @type int
             Pagination counter
         */
-        barq.currentPage = 1;
+        var currentPage = 1;
 
         barq.el = {
             baseField: baseField
@@ -329,7 +334,7 @@
         // A good option would be tether.js but it weights ~5kb (more than Barq itself).
         barq.repositionList = function() {
             // TODO: this page set is legacy, check if needed
-            barq.currentPage = 1;
+            currentPage = 1;
 
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
 
@@ -439,10 +444,10 @@
             } else if (barq.ut.isElementOnViewport(visibleListItems[indexForPaginationThreshold])) {
 
                 // Keep track of the pagination
-                barq.currentPage++;
+                currentPage++;
 
                 // The result to start fetching from
-                var queryOffset = barq.currentPage * barq.options.resultsPerPage;
+                var queryOffset = currentPage * barq.options.resultsPerPage;
 
                 // The fetched results
                 var nextResultPage = barq.searchListItem(barq.el.textInput.value, queryOffset, barq.options.resultsPerPage);
