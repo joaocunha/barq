@@ -179,19 +179,6 @@
                 }
 
                 return s;
-            },
-
-            // TODO: use a more reliable method of calculating the width
-            getComputedWidth: function(el) {
-                var computedWidth;
-
-                try {
-                    computedWidth = win.getComputedStyle(el).width;
-                } catch (e) {
-                    computedWidth = el.currentStyle.width;
-                }
-
-                return computedWidth;
             }
         };
 
@@ -300,6 +287,9 @@
             barq.el.textInput.focus();
             barq.el.textInput.value = selectedText;
 
+            // Stores the text on barq itself
+            barq.text = selectedText;
+
             // Hides the list as we don't need it anymore
             barq.hideList();
 
@@ -346,13 +336,9 @@
 
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
 
-            var computedWidth = utils.getComputedWidth(barq.el.textInput);
-
             barq.el.list.style.top = topPosition + 'px';
             barq.el.list.style.left = barq.el.textInput.offsetLeft + 'px';
-
-            // computed width already comes with 'px' suffix
-            barq.el.list.style.width = computedWidth;
+            barq.el.list.style.width = barq.el.textInput.offsetWidth + 'px';
         };
 
         // Calls the regex comparison (searchListItem)and updates the list with the search results.
@@ -382,6 +368,7 @@
             // initially contains all the values unless otherwise we found a match we override
             var matchedItems, matchingRegex, highlightRegex, formattedMatch;
 
+            // Escape some special characters
             searchString = utils.escapeString(searchString);
 
             // TODO: the logic for an empty string (run onFocus) is just to bring all

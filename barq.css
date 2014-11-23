@@ -1,4 +1,8 @@
-input {
+* {
+  box-sizing: border-box;
+}
+
+input, select {
   border: 1px solid black;
   display: inline-block;
   width: 400px;
