@@ -134,8 +134,8 @@
                 return (
                     rect.top >= 0 &&
                     rect.left >= 0 &&
-                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+                    rect.bottom <= (win.innerHeight || doc.documentElement.clientHeight) &&
+                    rect.right <= (win.innerWidth || doc.documentElement.clientWidth)
                 );
             },
 
@@ -457,7 +457,7 @@
                 // Cross browser key code capturing
                 var pressedKey = e.keyCode || e.which;
 
-                // List of navigation key codes we're interested at
+                // List of the navigation key codes we're interested at
                 var KEYCODES = {
                     TAB: 9,
                     ENTER: 13,
@@ -509,7 +509,7 @@
 
             // Hides the autocomplete when clicking outside the element.
             // TODO: make sure clicking on the scrollbar doesn't trigger it
-            barq.ut.addEventListener(doc.documentElement || doc.body.parentNode, 'click', function(e) {
+            barq.ut.addEventListener(doc.documentElement, 'click', function(e) {
                 if (e.target == barq.el.textInput || e.target == barq.el.list) {
                     e.stopPropagation();
                 } else {
