@@ -77,7 +77,7 @@
             onchange: opts.onchange || function(){}
         };
 
-        barq.classNames = {
+        var classNames = {
             selectedListItem: 'barq-selected',
             dropdownList: 'barq-list',
             textInput: 'barq-text-input',
@@ -192,7 +192,7 @@
             // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
             // We don't remove the base element as it holds the `name` attribute and values,
             // so it's useful in case of form submission.
-            barq.ut.addClass(barq.el.baseField, barq.classNames.hidden);
+            barq.ut.addClass(barq.el.baseField, classNames.hidden);
 
             // Creates the main text input that's gonna be used as an autocomplete
             barq.el.textInput = barq.createTextInput();
@@ -227,7 +227,7 @@
             var input = doc.createElement('input');
 
             // Only one class ATM, no need for fancy pants .addClass()
-            input.setAttribute('class', barq.classNames.textInput);
+            input.setAttribute('class', classNames.textInput);
 
             // This is the browser autocomplete, nothing to do with the plugin
             input.setAttribute('autocomplete', 'off');
@@ -246,7 +246,7 @@
 
             // TODO: couldn't reference the element on creation time, check if its possible
             // TODO: this conflicts in case we have multiple instances of Barq on the same page
-            return doc.querySelector('.' + barq.classNames.textInput);
+            return doc.querySelector('.' + classNames.textInput);
         };
 
         // If the base element have an option with selected attribute
@@ -273,16 +273,16 @@
 
         barq.showList = function() {
             barq.repositionList();
-            barq.ut.addClass(barq.el.list, barq.classNames.visible);
-            barq.ut.addClass(barq.el.textInput, barq.classNames.textInputWithList);
+            barq.ut.addClass(barq.el.list, classNames.visible);
+            barq.ut.addClass(barq.el.textInput, classNames.textInputWithList);
 
             // Sets the first item as active, so we can start our navigation from there
-            barq.ut.addClass(barq.el.list.firstChild, barq.classNames.activeItem);
+            barq.ut.addClass(barq.el.list.firstChild, classNames.activeItem);
         };
 
         barq.hideList = function() {
-            barq.ut.removeClass(barq.el.list, barq.classNames.visible);
-            barq.ut.removeClass(barq.el.textInput, barq.classNames.textInputWithList);
+            barq.ut.removeClass(barq.el.list, classNames.visible);
+            barq.ut.removeClass(barq.el.textInput, classNames.textInputWithList);
         };
 
         barq.selectListItem = function(listItem) {
@@ -306,12 +306,12 @@
         barq.createEmptyList = function() {
             var list = doc.createElement('ul');
 
-            list.setAttribute('class', barq.classNames.dropdownList);
+            list.setAttribute('class', classNames.dropdownList);
 
             barq.el.textInput.insertAdjacentHTML('afterend', list.outerHTML);
 
             // TODO: couldn't reference the element on creation time, check if its possible
-            return doc.querySelector('.' + barq.classNames.dropdownList);
+            return doc.querySelector('.' + classNames.dropdownList);
         };
 
         // Abstracted into a function in case we need to do additional logic
@@ -378,7 +378,7 @@
 
                 // This could throw undefined property if match returns null
                 try {
-                    formattedMatch = '$1<em class="' + barq.classNames.match + '">$2</em>$3';
+                    formattedMatch = '$1<em class="' + classNames.match + '">$2</em>$3';
 
                     matchedItems = barq.listItems.match(matchingRegex)
                                                  .splice(offset, limit)
@@ -401,7 +401,7 @@
         // Shown when no items were found on a search.
         barq.noResultsFound = function() {
             var item = barq.ut.stringFormat('<li class="{0}">{1}</li>',
-                           barq.classNames.noResults, barq.options.noResultsMessage);
+                           classNames.noResults, barq.options.noResultsMessage);
 
             barq.replaceListData(item);
         };
@@ -507,7 +507,7 @@
 
                 // Stores the currently active item
                 // TODO: might collide with multiple instances
-                var activeItem = doc.querySelector('.' + barq.classNames.activeItem);
+                var activeItem = doc.querySelector('.' + classNames.activeItem);
 
                 // The index of the active element will be the start of the navigation
                 var activeItemIndex = Array.prototype.indexOf.call(listItems, activeItem);
@@ -528,10 +528,10 @@
                 }
 
                 // Removes the active class from the currently active item
-                barq.ut.removeClass(activeItem, barq.classNames.activeItem);
+                barq.ut.removeClass(activeItem, classNames.activeItem);
 
                 // Applies the active class on the new item
-                barq.ut.addClass(listItems[itemIndexToActivate], barq.classNames.activeItem);
+                barq.ut.addClass(listItems[itemIndexToActivate], classNames.activeItem);
             });
 
             // Focusing on the input opens up the items list
