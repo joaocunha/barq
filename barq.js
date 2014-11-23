@@ -23,7 +23,7 @@
                 @type bool
                 Fetches the matches with a limit. Specially useful for large resultsets.
             */
-            enablePagination: opts.enablePagination || true,
+            enablePagination: opts.enablePagination || false,
 
             /**
                 resultsPerPage
@@ -236,12 +236,11 @@
                 input.setAttribute('placeholder', firstOptionText);
             }
 
-            // insertAdjacentHTML expects html string and not a DOM element
+            // Insert the input field right after the base select element
             barq.el.baseField.insertAdjacentHTML('afterend', input.outerHTML);
 
-            // TODO: couldn't reference the element on creation time, check if its possible
-            // TODO: this conflicts in case we have multiple instances of Barq on the same page
-            return doc.querySelector('.' + classNames.textInput);
+            // We grab it back from the DOM, as insertAdjecentHTML doesn't return the inserted element
+            return barq.el.baseField.nextElementSibling;
         };
 
         // If the base element have an option with selected attribute
@@ -273,6 +272,7 @@
 
             // Sets the first item as active, so we can start our navigation from there
             utils.addClass(barq.el.list.firstChild, classNames.activeItem);
+            barq.el.activeItem = barq.el.list.firstChild;
         };
 
         barq.hideList = function() {
@@ -305,16 +305,17 @@
             barq.options.onchange.call(barq);
         };
 
-        // Creates an empty <ul> element and inserts it after the base element.
+        // Creates an empty <ul> element and inserts it after the autocomplete input.
         barq.createEmptyList = function() {
             var list = doc.createElement('ul');
 
             list.setAttribute('class', classNames.dropdownList);
 
+            // Insert the list right after the autocomplete input
             barq.el.textInput.insertAdjacentHTML('afterend', list.outerHTML);
 
-            // TODO: couldn't reference the element on creation time, check if its possible
-            return doc.querySelector('.' + classNames.dropdownList);
+            // We grab it back from the DOM, as insertAdjecentHTML doesn't return the inserted element
+            return barq.el.textInput.nextElementSibling;
         };
 
         // Abstracted into a function in case we need to do additional logic
@@ -331,9 +332,6 @@
         // TODO: This implementation is pretty rough, could do with some love.
         // A good option would be tether.js but it weights ~5kb (more than Barq itself).
         barq.repositionList = function() {
-            // TODO: this page set is legacy, check if needed
-            currentPage = 1;
-
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
 
             barq.el.list.style.top = topPosition + 'px';
@@ -344,6 +342,7 @@
         // Calls the regex comparison (searchListItem) and updates the list with the search results.
         barq.filterList = function(searchString) {
             // Where the cursor starts
+            // TODO: needed? Why always 0?
             var queryOffset = 0;
 
             // Number of results we'll fetch per page
@@ -464,8 +463,7 @@
             var items = barq.el.currentListItemsDOM;
 
             // Stores the currently active item
-            // TODO: might collide with other instances of Barq
-            var activeItem = doc.querySelector('.' + classNames.activeItem);
+            var activeItem = barq.el.activeItem;
 
             // The index of the active element will be the start of the navigation
             var activeItemIndex = Array.prototype.indexOf.call(items, activeItem);
@@ -488,10 +486,10 @@
             utils.addClass(items[itemIndexToActivate], classNames.activeItem);
 
             // Stores the new active item globally
-            barq.activeItem = items[itemIndexToActivate];
+            barq.el.activeItem = items[itemIndexToActivate];
 
             // Scrolls the list to show the item
-            barq.scrollListItemIntoView(barq.activeItem);
+            barq.scrollListItemIntoView(barq.el.activeItem);
         }
 
         barq.scrollListItemIntoView = function(item) {
@@ -548,13 +546,13 @@
 
                 // ENTER selects the list item
                 if (keyPressed === KEYCODES.ENTER) {
-                    barq.selectListItem(doc.querySelector('.' + classNames.activeItem));
+                    barq.selectListItem(barq.el.activeItem);
                     return;
                 }
 
                 // ESC closes the auto complete list
                 if (keyPressed === KEYCODES.ESC) {
-                    return;
+                    barq.hideList();
                 }
             });
 
@@ -574,6 +572,11 @@
             // Focusing on the input opens up the items list
             utils.addEventListener(barq.el.textInput, 'focus', function() {
                 barq.updateList();
+            });
+
+            // Selects the active item in case of pressing tab or leaving the field
+            utils.addEventListener(barq.el.textInput, 'blur', function() {
+                barq.selectListItem(barq.el.activeItem);
             });
 
             // Needed for pagination
