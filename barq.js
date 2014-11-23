@@ -274,6 +274,9 @@
             barq.repositionList();
             barq.ut.addClass(barq.el.list, barq.classNames.visible);
             barq.ut.addClass(barq.el.textInput, barq.classNames.textInputWithList);
+
+            // Sets the first item as active, so we can start our navigation from there
+            barq.ut.addClass(barq.el.list.firstChild, barq.classNames.activeItem);
         };
 
         barq.hideList = function() {
