@@ -473,12 +473,19 @@
                     DOWN: 40
                 };
 
-                // Any key, except navigation keys like arrows, home, end...
+                // Filter out navigation keys
+                var isNavigationKey = false;
                 for (var key in KEYCODES) {
-                    if (pressedKey !== KEYCODES[key]) {
-                        barq.updateList();
-                        return;
+                    if (pressedKey === KEYCODES[key]) {
+                        isNavigationKey = true;
+                        break;
                     }
+                }
+
+                // Any key, except navigation keys like arrows, home, end...
+                if (!isNavigationKey) {
+                    barq.updateList();
+                    return;
                 }
 
                 // ENTER selects the list item
@@ -491,15 +498,37 @@
                     return;
                 }
 
+                // TODO: we currently store an HTML string of items. Consider storing an
+                // up to date DOM representation as well, maybe after search/filtering
+                var listItems = barq.el.list.childNodes;
+
+                // Stores the currently active item
+                // TODO: might collide with multiple instances
+                var activeItem = doc.querySelector('.' + barq.classNames.activeItem);
+
+                // The index of the active element will be the start of the navigation
+                var activeItemIndex = Array.prototype.indexOf.call(listItems, activeItem);
+
+                // The now active item
+                var itemIndexToActivate = 0;
+
                 // UP navigates one item up
                 if (pressedKey === KEYCODES.UP) {
-                    return;
+                    // If it's the first list item, we activate the last one
+                    itemIndexToActivate = (activeItemIndex === 0) ? listItems.length - 1 : activeItemIndex - 1;
                 }
 
                 // DOWN navigates one item down
                 if (pressedKey === KEYCODES.DOWN) {
-                    return;
+                    // If we reach the last item, scroll back to the first
+                    itemIndexToActivate = (activeItemIndex === listItems.length - 1) ? 0 : activeItemIndex + 1;
                 }
+
+                // Removes the active class from the currently active item
+                barq.ut.removeClass(activeItem, barq.classNames.activeItem);
+
+                // Applies the active class on the new item
+                barq.ut.addClass(listItems[itemIndexToActivate], barq.classNames.activeItem);
             });
 
             // Focusing on the input opens up the items list
