@@ -271,7 +271,14 @@
             var regex = /<option(?:[^>]*?value="([^"]*?)"|)[^>]*?>(.*?)<\/option>\n?/gi;
             var li = '<li data-value="$1">$2</li>';
 
-            return htmlString.replace(regex, li);
+            htmlString = htmlString.replace(regex, li);
+
+            // Clean up comments and whitespace
+            htmlString = htmlString.replace(/<!--([^\[|(<!)].*)/g, '')
+                                   .replace(/\s{2,}/g, '')
+                                   .replace(/(\r?\n)/g, '');
+
+            return htmlString;
         };
 
         barq.showList = function() {
@@ -384,8 +391,6 @@
             // Escape some special characters
             searchString = utils.escapeString(searchString);
 
-            // TODO: the logic for an empty string (run onFocus) is just to bring all
-            // items (spliced, if there is pagination). Can be improved.
             if (searchString !== '') {
                 matchingRegex  = new RegExp('<li[^>]*>[^<]*'+searchString+'[^<]*<\/li>', 'gi');
                 highlightRegex = new RegExp('(<li[^>]*>[^<]*)('+searchString+')([^<]*<\/li>)', 'gi');
@@ -403,10 +408,8 @@
                     return false;
                 }
             } else {
-                matchingRegex = new RegExp('<li[^<\/]*<\/li>', 'gi');
-                matchedItems = barq.listItems.match(matchingRegex)
-                                                .splice(offset, limit)
-                                                .join('');
+                // no filtering
+                matchedItems = barq.listItems;
             }
 
             return matchedItems;
