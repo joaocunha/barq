@@ -608,11 +608,15 @@
                 // Checks if the click was performed on the highlighted part
                 var item = e.target.className === classNames.match ? e.target.parentNode : e.target;
 
-                // Updates the activeItem
-                barq.el.activeItem = item;
+                // Prevents triggering clicks on the scrollbar
+                if (item != barq.el.list) {
 
-                // Selects it
-                barq.selectListItem(item);
+                    // Updates the activeItem
+                    barq.el.activeItem = item;
+
+                    // Selects it
+                    barq.selectListItem(item);
+                }
             });
 
             // TODO: add debounce() from lodash if we keep the resize event
