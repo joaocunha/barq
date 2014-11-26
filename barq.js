@@ -469,7 +469,7 @@
                 var nextResultPage = barq.searchListItem(barq.el.textInput.value, queryOffset, barq.options.resultsPerPage);
 
                 // If there are results, append them to the list
-                (nextResultPage != '') && barq.insertDataOnList(nextResultPage);
+                (nextResultPage !== '') && barq.insertDataOnList(nextResultPage);
             }
         };
 
@@ -509,7 +509,7 @@
 
             // Scrolls the list to show the item
             barq.scrollListItemIntoView(barq.el.activeItem);
-        }
+        };
 
         barq.scrollListItemIntoView = function(item) {
             // Stores the item `top` position on the list
@@ -613,7 +613,7 @@
                 var item = e.target.className === classNames.match ? e.target.parentNode : e.target;
 
                 // Prevents triggering clicks on the scrollbar
-                if (item != barq.el.list) {
+                if (item !== barq.el.list) {
 
                     // Updates the activeItem
                     barq.el.activeItem = item;
