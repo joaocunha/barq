@@ -23,7 +23,7 @@
                 @type bool
                 Fetches the matches with a limit. Specially useful for large resultsets.
             */
-            enablePagination: opts.enablePagination || false,
+            enablePagination: opts.enablePagination || true,
 
             /**
                 resultsPerPage
@@ -38,14 +38,14 @@
                 If true, removes the first option element from the search. Useful when
                 it's something like "<option>Select a value</option>"
             */
-            removeFirstOptionFromSearch: opts.removeFirstOptionFromSearch || false,
+            removeFirstOptionFromSearch: opts.removeFirstOptionFromSearch || true,
 
             /**
                 useFirstOptionTextAsPlaceholder
                 @type bool
                 If true, uses the first option as a placeholder for the autocomplete.
             */
-            useFirstOptionTextAsPlaceholder: opts.useFirstOptionTextAsPlaceholder || false,
+            useFirstOptionTextAsPlaceholder: opts.useFirstOptionTextAsPlaceholder || true,
 
             /**
                 arbitraryPlaceholderText
@@ -197,7 +197,7 @@
             // Creates the empty <ul> element to hold the list items
             barq.el.list = barq.createEmptyList();
 
-            // Extracts the items from the base field and stores them in memory
+            // Extracts the items from the base field and stores them in memory as a string representation
             barq.listItems = barq.extractDataFromBaseField();
 
             // Fills the list element with the listItems
@@ -386,30 +386,32 @@
         // TODO: maybe the splice can also be done with regex.
         barq.searchListItem = function(searchString, offset, limit) {
             // initially contains all the values unless otherwise we found a match we override
-            var matchedItems, matchingRegex, highlightRegex, formattedMatch;
+            var matchedItems, highlightRegex, formattedMatch;
 
-            // Escape some special characters
+            // Escape some special characters to prevent breaking dynamic the regex
             searchString = utils.escapeString(searchString);
 
+            var matchingRegex;
             if (searchString !== '') {
+                // We create a dynamic regex based on the search query
                 matchingRegex  = new RegExp('<li[^>]*>[^<]*'+searchString+'[^<]*<\/li>', 'gi');
-                highlightRegex = new RegExp('(<li[^>]*>[^<]*)('+searchString+')([^<]*<\/li>)', 'gi');
-
-                // This could throw undefined property if match returns null
-                try {
-                    formattedMatch = '$1<em class="' + classNames.match + '">$2</em>$3';
-
-                    matchedItems = barq.listItems.match(matchingRegex)
-                                                 .splice(offset, limit)
-                                                 .join('')
-                                                 .replace(highlightRegex, formattedMatch);
-                }
-                catch(e) {
-                    return false;
-                }
             } else {
-                // no filtering
-                matchedItems = barq.listItems;
+                // Matches all list elements, as there is no search query
+                matchingRegex = /<li[^<]*<\/li>/gi;
+            }
+
+            matchedItems = barq.listItems.match(matchingRegex);
+
+            if (matchedItems) {
+                matchedItems = matchedItems.splice(offset, limit).join('');
+            } else {
+                return false;
+            }
+
+            if (searchString !== '') {
+                highlightRegex = new RegExp('(<li[^>]*>[^<]*)('+searchString+')([^<]*<\/li>)', 'gi');
+                formattedMatch = '$1<em class="' + classNames.match + '">$2</em>$3';
+                matchedItems = matchedItems.replace(highlightRegex, formattedMatch);
             }
 
             return matchedItems;
@@ -527,6 +529,8 @@
 
             // Check if the item is AFTER the list scroll area (visible elements)
             var itemIsAfterScrollArea = itemTop >= ((listScroll + listHeight ) - itemHeight);
+
+            // TODO: its scrolling to the top
 
             if (itemIsBeforeScrollArea) {
                 // Scroll the list UP to show the active item on top
