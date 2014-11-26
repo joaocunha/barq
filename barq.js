@@ -14,8 +14,12 @@
 
     // We declare the plugin as a globally accessible variable, so we
     // can instantiate outside the anonymous self-invoking function
-    win.Barq = function(baseField, opts) {
-        var barq = this, opts = opts || {};
+    win.Barq = function(baseField, options) {
+        // Just an alias for easier readability (and to preserve `this` context)
+        var barq = this;
+
+        // For extending the options in case the user passes the parameter
+        var opts = options || {};
 
         barq.options = {
             /**
@@ -165,19 +169,6 @@
             // TODO: make it customizable on options
             escapeString: function(text) {
                 return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-            },
-
-            // Allows micro-templating like stringFormat('<span class="{0}">{1}</span>', 'greeting', 'Hello World');
-            // TODO: worth having?
-            stringFormat: function() {
-                var s = arguments[0];
-
-                for (var i = 0; i < arguments.length - 1; i++) {
-                    var reg = new RegExp("\\{" + i + "\\}", "gm");
-                    s = s.replace(reg, arguments[i + 1]);
-                }
-
-                return s;
             }
         };
 
@@ -388,7 +379,7 @@
             // initially contains all the values unless otherwise we found a match we override
             var matchedItems, highlightRegex, formattedMatch;
 
-            // Escape some special characters to prevent breaking dynamic the regex
+            // Escape some special characters to prevent breaking the dynamic regex
             searchString = utils.escapeString(searchString);
 
             var matchingRegex;
@@ -419,8 +410,9 @@
 
         // Shown when no items were found on a search.
         barq.noResultsFound = function() {
-            var item = utils.stringFormat('<li class="{0}">{1}</li>',
-                           classNames.noResults, barq.options.noResultsMessage);
+            var template = '<li class="{0}">{1}</li>';
+            var item = template.replace('{0}', classNames.noResults)
+                                .replace('{1}', barq.options.noResultsMessage);
 
             barq.replaceListData(item);
         };
