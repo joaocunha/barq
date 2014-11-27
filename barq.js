@@ -279,7 +279,6 @@
 
             // Sets the first item as active, so we can start our navigation from there
             utils.addClass(barq.el.list.firstChild, classNames.activeItem);
-            barq.el.activeItem = barq.el.list.firstChild;
         };
 
         barq.hideList = function() {
@@ -307,9 +306,6 @@
             // Store the value on Barq itself
             barq.value = val;
 
-            // Updates the reference to the activeElement
-            barq.el.activeElement = listItem;
-
             // onchange user callback
             barq.options.onchange.call(barq);
         };
@@ -335,6 +331,9 @@
         // Abstracted into a function in case we need to do additional logic
         barq.insertDataOnList = function(data) {
             barq.el.list.innerHTML += data;
+
+            // Updates the list
+            barq.el.currentListItemsDOM = barq.el.list.childNodes;
         };
 
         // Repositions and resizes the list when viewport size changes.
@@ -435,74 +434,69 @@
         // Pagination
         // TODO: the current way of fetching more results is based on having an item on the viewport.
         // Maybe there is a better alternative.
-        barq.loadMoreItems = function() {
-            if (!barq.options.enablePagination) return;
-
+        barq.paginate = function() {
+            // if (!barq.options.enablePagination) return -1;
             // Stores the previsouly fetched elements
-            var visibleListItems = barq.el.list.children;
+            var visibleItems = barq.el.list.children;
 
             // Pagination is triggered when scrolling reaches the second last item.
-            var indexForPaginationThreshold = visibleListItems.length - 2;
+            // This way we don't require the user to scroll down all the way (one pixel could
+            // prevent triggering the pagination).
+            var paginationThreshold = visibleItems.length - 2;
 
             // Not enough elements to require pagination
-            if (indexForPaginationThreshold < 0) {
-                return;
-
+            if (paginationThreshold < 0) {
+                return -1;
             // When the scroll reaches the pagination threshold, we fetch the next resultset
-            } else if (utils.isElementOnViewport(visibleListItems[indexForPaginationThreshold])) {
+            } else if (utils.isElementOnViewport(visibleItems[paginationThreshold])) {
 
                 // Keep track of the pagination
                 currentPage++;
 
-                // The result to start fetching from
-                var queryOffset = currentPage * barq.options.resultsPerPage;
+                // Returns the index to start fetching results from
+                return (currentPage * barq.options.resultsPerPage);
+            } else {
 
-                // The fetched results
-                var nextResultPage = barq.searchListItem(barq.el.textInput.value, queryOffset, barq.options.resultsPerPage);
-
-                // If there are results, append them to the list
-                (nextResultPage !== '') && barq.insertDataOnList(nextResultPage);
             }
+        };
+
+        barq.getActiveListItem = function() {
+            return barq.el.list.querySelector('.' + classNames.activeItem);
         };
 
         barq.keyboardNavigate = function(keyPressed) {
-            // No results, prevent navigation
-            if (!barq.el.currentListItemsDOM) { return; }
+                // The stored search results
+                var items = barq.el.currentListItemsDOM;
 
-            // The stored search results
-            var items = barq.el.currentListItemsDOM;
+                // Stores the currently active item
+                var activeItem = barq.getActiveListItem();
 
-            // Stores the currently active item
-            var activeItem = barq.el.activeItem;
+                // Next item in line to be activated
+                var itemToActivate;
 
-            // The index of the active element will be the start of the navigation
-            var activeItemIndex = Array.prototype.indexOf.call(items, activeItem);
+                // Prevent looping from first to last / last to first
+                if (keyPressed === KEYCODES.UP) {
+                    // Actives the previous item only if it's not the first item of the list
+                    if (activeItem.previousElementSibling) itemToActivate = activeItem.previousElementSibling;
+                } else {
+                    // Don't activate the next item if it's the last one
+                    if (activeItem.nextElementSibling) itemToActivate = activeItem.nextElementSibling;
+                }
 
-            // The now active item (safe initial value)
-            var itemIndexToActivate = activeItemIndex;
+                if (itemToActivate) {
+                    // Removes the active class from the currently active item
+                    utils.removeClass(activeItem, classNames.activeItem);
 
-            // Prevent looping from first to last / last to first
-            if (keyPressed === KEYCODES.UP) {
-                // Actives the previous item only if it's not the first item of the list
-                (itemIndexToActivate > 0) && itemIndexToActivate--;
-            } else {
-                // Don't activate the next item if it's the last one
-                (itemIndexToActivate < items.length - 1) && itemIndexToActivate++;
-            }
+                    // Applies the active class on the new item
+                    utils.addClass(itemToActivate, classNames.activeItem);
 
-            // Removes the active class from the currently active item
-            utils.removeClass(activeItem, classNames.activeItem);
-
-            // Applies the active class on the new item
-            utils.addClass(items[itemIndexToActivate], classNames.activeItem);
-
-            // Stores the new active item globally
-            barq.el.activeItem = items[itemIndexToActivate];
-
-            // Scrolls the list to show the item
-            barq.scrollListItemIntoView(barq.el.activeItem);
+                    // Scrolls the list to show the item
+                    barq.scrollListItemIntoView(itemToActivate);
+                }
         };
 
+        // Triggered by keyboardNavigate(), it calculates the position
+        // of the item and scrolls the list to show it
         barq.scrollListItemIntoView = function(item) {
             // Stores the item `top` position on the list
             var itemTop = item.offsetTop;
@@ -522,8 +516,6 @@
             // Check if the item is AFTER the list scroll area (visible elements)
             var itemIsAfterScrollArea = itemTop >= ((listScroll + listHeight ) - itemHeight);
 
-            // TODO: its scrolling to the top
-
             if (itemIsBeforeScrollArea) {
                 // Scroll the list UP to show the active item on top
                 barq.el.list.scrollTop = itemTop;
@@ -531,6 +523,8 @@
                 // Scrolls the list DOWN to show the active item on bottom
                 barq.el.list.scrollTop = (itemTop - listHeight) + itemHeight;
             }
+
+            // ^ simply don't scroll otherwise.
         };
 
         // Initial non-dynamic event setup
@@ -559,7 +553,7 @@
 
                 // ENTER selects the list item
                 if (keyPressed === KEYCODES.ENTER) {
-                    barq.selectListItem(barq.el.activeItem);
+                    barq.selectListItem(barq.getActiveListItem());
                     return;
                 }
 
@@ -579,7 +573,8 @@
 
                 // UP or DOWN arrows navigate through the list
                 if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
-                    barq.keyboardNavigate(keyPressed);
+                    // Navigate only if there are results
+                    (barq.el.currentListItemsDOM) && barq.keyboardNavigate(keyPressed);
                 }
             });
 
@@ -590,27 +585,41 @@
 
             // Selects the active item in case of pressing tab or leaving the field
             utils.addEventListener(barq.el.textInput, 'blur', function() {
-                barq.selectListItem(barq.el.activeItem);
+                if (!barq.preventBlurTrigger && barq.getActiveListItem()) {
+                    barq.selectListItem(barq.getActiveListItem());
+                }
             });
 
-            // Needed for pagination
+            // Pagination is triggered onScroll
             utils.addEventListener(barq.el.list, 'scroll', function() {
-                barq.loadMoreItems();
+                var offset = barq.paginate();
+
+                if (offset >= 0) {
+                    // Fetch the results
+                    var results = barq.searchListItem(barq.el.textInput.value, offset, barq.options.resultsPerPage);
+
+                    // If there are results, append them to the list
+                    (results !== '') && barq.insertDataOnList(results);
+                }
             });
 
             // We used mousedown instead of click to solve a race condition against blur
             // http://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event/10653160#10653160
             utils.addEventListener(barq.el.list, 'mousedown', function(e) {
+                // The mousedown is not enough (although required) to prevent the race
+                // condition, as there is DOM manipultion involved. This nasty hack
+                // takes care of it, but can definitely be improved.
+                barq.preventBlurTrigger = true;
+
+                win.setTimeout(function() {
+                    barq.preventBlurTrigger = false;
+                }, 1);
+
                 // Checks if the click was performed on the highlighted part
                 var item = e.target.className === classNames.match ? e.target.parentNode : e.target;
 
                 // Prevents triggering clicks on the scrollbar
-                if (item !== barq.el.list) {
-
-                    // Updates the activeItem
-                    barq.el.activeItem = item;
-
-                    // Selects it
+                if (item !== barq.el.list && item.className !== classNames.noResults) {
                     barq.selectListItem(item);
                 }
             });
