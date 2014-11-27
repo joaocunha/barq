@@ -34,7 +34,7 @@
                 @type int
                 Number of list items to fetch per page.
             */
-            resultsPerPage: opts.resultsPerPage || 50,
+            resultsPerPage: opts.resultsPerPage || 10,
 
             /**
                 removeFirstOptionFromSearch
@@ -261,7 +261,6 @@
             var htmlString = barq.el.baseField.innerHTML;
             var regex = /<option(?:[^>]*?value="([^"]*?)"|)[^>]*?>(.*?)<\/option>\n?/gi;
             var li = '<li data-value="$1">$2</li>';
-
             htmlString = htmlString.replace(regex, li);
 
             // Clean up comments and whitespace
@@ -326,13 +325,14 @@
         // Abstracted into a function in case we need to do additional logic
         barq.replaceListData = function(data) {
             barq.el.list.innerHTML = data;
+
+            barq.el.currentListItemsDOM = barq.el.list.childNodes;
         };
 
         // Abstracted into a function in case we need to do additional logic
         barq.insertDataOnList = function(data) {
             barq.el.list.innerHTML += data;
 
-            // Updates the list
             barq.el.currentListItemsDOM = barq.el.list.childNodes;
         };
 
@@ -346,65 +346,78 @@
             barq.el.list.style.width = barq.el.textInput.offsetWidth + 'px';
         };
 
-        // Calls the regex comparison (searchListItem) and updates the list with the search results.
-        barq.filterList = function(searchString) {
-            // Where the cursor starts
-            // TODO: needed? Why always 0?
-            var queryOffset = 0;
-
-            // Number of results we'll fetch per page
-            var queryLimit = (barq.options.resultsPerPage);
-
-            // Filtering results
-            var matchedElements = barq.searchListItem(searchString, queryOffset, queryLimit);
-
-            if (matchedElements) {
-                barq.replaceListData(matchedElements);
-                return true;
-            } else {
-                return false;
-            }
-        };
-
-        // Uses regex to search through the list items. Accepts offset and limit for pagination. This is where most of the magic happens.
         // We search on the items list (string) with `match`, which returns an array of matches.
         // We `splice` this array to return only a chunk of results, based
         // on the pagination. We then `join` that chunk, converting it back to a string,
         // and perform a `replace` to add highlighting.
+        barq.search = function(query, offset) {
+            // An array of matches
+            var matches = barq.filterList(query);
 
-        // TODO: looks uber ugly, can definitely be improved.
-        // TODO: maybe the splice can also be done with regex.
-        barq.searchListItem = function(searchString, offset, limit) {
-            // initially contains all the values unless otherwise we found a match we override
-            var matchedItems, highlightRegex, formattedMatch;
+            if (barq.options.enablePagination) {
+                offset = offset || 0;
+                var limit = barq.options.resultsPerPage;
 
-            // Escape some special characters to prevent breaking the dynamic regex
-            searchString = utils.escapeString(searchString);
+                if (offset >= 0) matches = matches.splice(offset, limit);
+            }
 
-            var matchingRegex;
-            if (searchString !== '') {
-                // We create a dynamic regex based on the search query
-                matchingRegex  = new RegExp('<li[^>]*>[^<]*'+searchString+'[^<]*<\/li>', 'gi');
+            if (matches.length) {
+                // Stores a DOM representation of the items every time a search is performed
+                matches = matches.join('');
             } else {
-                // Matches all list elements, as there is no search query
-                matchingRegex = /<li[^<]*<\/li>/gi;
+                barq.noResultsFound();
+                barq.el.currentListItemsDOM = null;
             }
 
-            matchedItems = barq.listItems.match(matchingRegex);
+            if (query && matches.length) {
+                matches = barq.highlightMatches(query, matches);
+            }
 
-            if (matchedItems) {
-                matchedItems = matchedItems.splice(offset, limit).join('');
+            if (offset === 0 && matches.length) {
+                barq.replaceListData(matches);
+                utils.addClass(barq.el.list.firstChild, classNames.activeItem);
             } else {
-                return false;
+                barq.insertDataOnList(matches);
+
             }
 
-            if (searchString !== '') {
-                highlightRegex = new RegExp('(<li[^>]*>[^<]*)('+searchString+')([^<]*<\/li>)', 'gi');
-                formattedMatch = '$1<em class="' + classNames.match + '">$2</em>$3';
-                matchedItems = matchedItems.replace(highlightRegex, formattedMatch);
+            return matches;
+        };
+
+        /**
+         * @function filterList
+         * Filters the list (string) based on a search query and returns an array of matches.
+         *
+         * @param {String} [query] The search query to base the filtering against
+         * @returns {Array} An array of matches
+         */
+        barq.filterList = function(query) {
+            // Matches all list elements by default (for no query cases)
+            var matchingRegex = /<li[^<]*<\/li>/gi;
+
+            // We create a dynamic regex based on the search query, if any
+            if (query !== '') {
+                // Escape some special characters to prevent breaking the dynamic regex
+                query = utils.escapeString(query);
+                matchingRegex = new RegExp('<li[^>]*>[^<]*' + query + '[^<]*<\/li>', 'gi');
             }
 
-            return matchedItems;
+            return barq.listItems.match(matchingRegex) || [];
+        };
+
+        /**
+         * @function highlightMatches
+         * Highlights the matches on a search by encapsulating in an <em> tag.
+         *
+         * @param {String} query The search query to highlight
+         * @param {Array} matches The array of matches to look through
+         * @returns {String} An updated string with the matches encapsulates in <em> tags
+         */
+        barq.highlightMatches = function(query, matches) {
+            query = utils.escapeString(query);
+            var highlightRegex = new RegExp('(<li[^>]*>[^<]*)(' + query + ')([^<]*<\/li>)', 'gi');
+            var formattedMatch = '$1<em class="' + classNames.match + '">$2</em>$3';
+            return matches.replace(highlightRegex, formattedMatch);
         };
 
         // Shown when no items were found on a search.
@@ -416,24 +429,9 @@
             barq.replaceListData(item);
         };
 
-        // TODO: can probably be split within the existing logic.
-        barq.updateList = function() {
-            var matches = barq.filterList(barq.el.textInput.value);
-
-            if (matches) {
-                barq.showList();
-
-                // Stores a DOM representation of the items every time a search is performed
-                barq.el.currentListItemsDOM = barq.el.list.childNodes;
-            } else {
-                barq.noResultsFound();
-                barq.el.currentListItemsDOM = null;
-            }
-        };
-
         // Pagination
         // TODO: the current way of fetching more results is based on having an item on the viewport.
-        // Maybe there is a better alternative.
+        // There might be a more elegant alternative
         barq.paginate = function() {
             // Stores the previsouly fetched elements
             var visibleItems = barq.el.list.children;
@@ -462,34 +460,34 @@
         };
 
         barq.keyboardNavigate = function(keyPressed) {
-                // The stored search results
-                var items = barq.el.currentListItemsDOM;
+            // The stored search results
+            var items = barq.el.currentListItemsDOM;
 
-                // Stores the currently active item
-                var activeItem = barq.getActiveListItem();
+            // Stores the currently active item
+            var activeItem = barq.getActiveListItem();
 
-                // Next item in line to be activated
-                var itemToActivate;
+            // Next item in line to be activated
+            var itemToActivate;
 
-                // Prevent looping from first to last / last to first
-                if (keyPressed === KEYCODES.UP) {
-                    // Actives the previous item only if it's not the first item of the list
-                    if (activeItem.previousElementSibling) itemToActivate = activeItem.previousElementSibling;
-                } else {
-                    // Don't activate the next item if it's the last one
-                    if (activeItem.nextElementSibling) itemToActivate = activeItem.nextElementSibling;
-                }
+            // Prevent looping from first to last / last to first
+            if (keyPressed === KEYCODES.UP) {
+                // Actives the previous item only if it's not the first item of the list
+                if (activeItem.previousElementSibling) itemToActivate = activeItem.previousElementSibling;
+            } else {
+                // Don't activate the next item if it's the last one
+                if (activeItem.nextElementSibling) itemToActivate = activeItem.nextElementSibling;
+            }
 
-                if (itemToActivate) {
-                    // Removes the active class from the currently active item
-                    utils.removeClass(activeItem, classNames.activeItem);
+            if (itemToActivate) {
+                // Removes the active class from the currently active item
+                utils.removeClass(activeItem, classNames.activeItem);
 
-                    // Applies the active class on the new item
-                    utils.addClass(itemToActivate, classNames.activeItem);
+                // Applies the active class on the new item
+                utils.addClass(itemToActivate, classNames.activeItem);
 
-                    // Scrolls the list to show the item
-                    barq.scrollListItemIntoView(itemToActivate);
-                }
+                // Scrolls the list to show the item
+                barq.scrollListItemIntoView(itemToActivate);
+            }
         };
 
         // Triggered by keyboardNavigate(), it calculates the position
@@ -544,7 +542,7 @@
 
                 // Any key, except navigation keys like arrows, home, end, enter, esc...
                 if (!isNavigationKey) {
-                    barq.updateList();
+                    barq.search(this.value);
                     return;
                 }
 
@@ -577,7 +575,8 @@
 
             // Focusing on the input opens up the items list
             utils.addEventListener(barq.el.textInput, 'focus', function() {
-                barq.updateList();
+                barq.search(this.value);
+                barq.showList();
             });
 
             // Selects the active item in case of pressing tab or leaving the field
@@ -593,10 +592,7 @@
 
                 if (offset >= 0) {
                     // Fetch the results
-                    var results = barq.searchListItem(barq.el.textInput.value, offset, barq.options.resultsPerPage);
-
-                    // If there are results, append them to the list
-                    if (results !== '') barq.insertDataOnList(results);
+                    var results = barq.search(barq.el.textInput.value, offset);
                 }
             });
 
