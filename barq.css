@@ -20,6 +20,7 @@ input, select {
   max-height: 15.5em;
   position: absolute;
   z-index: 90;
+  background-color: white;
 }
 
 .barq-list li {

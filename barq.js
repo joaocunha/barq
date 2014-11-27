@@ -52,12 +52,12 @@
             useFirstOptionTextAsPlaceholder: opts.useFirstOptionTextAsPlaceholder || true,
 
             /**
-                arbitraryPlaceholderText
+                placeholderText
                 @type null|string
                 Allows to set an arbitrary placeholder value, overriding first
                 option's text which is the default.
             */
-            arbitraryPlaceholderText: opts.arbitraryPlaceholderText || null,
+            placeholderText: opts.placeholderText || null,
 
             /**
                 noResultsMessage
@@ -228,8 +228,8 @@
             barq.el.baseField.setAttribute('tabindex', '-1');
 
             // Checks for arbitrary text for the placeholder
-            if (barq.options.arbitraryPlaceholderText) {
-                input.setAttribute('placeholder', barq.options.arbitraryPlaceholderText);
+            if (barq.options.placeholderText) {
+                input.setAttribute('placeholder', barq.options.placeholderText);
             } else if (barq.options.useFirstOptionTextAsPlaceholder) {
                 // If null (default), use the first <option> text from the baseField
                 var firstOptionText = utils.getNodeText(barq.el.baseField.options[0]);
@@ -409,9 +409,9 @@
 
         // Shown when no items were found on a search.
         barq.noResultsFound = function() {
-            var template = '<li class="{0}">{1}</li>';
-            var item = template.replace('{0}', classNames.noResults)
-                                .replace('{1}', barq.options.noResultsMessage);
+            var template = '<li class="0">1</li>';
+            var item = template.replace('0', classNames.noResults)
+                                .replace('1', barq.options.noResultsMessage);
 
             barq.replaceListData(item);
         };
@@ -435,7 +435,6 @@
         // TODO: the current way of fetching more results is based on having an item on the viewport.
         // Maybe there is a better alternative.
         barq.paginate = function() {
-            // if (!barq.options.enablePagination) return -1;
             // Stores the previsouly fetched elements
             var visibleItems = barq.el.list.children;
 
@@ -455,8 +454,6 @@
 
                 // Returns the index to start fetching results from
                 return (currentPage * barq.options.resultsPerPage);
-            } else {
-
             }
         };
 
