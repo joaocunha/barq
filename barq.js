@@ -571,7 +571,7 @@
                 // UP or DOWN arrows navigate through the list
                 if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
                     // Navigate only if there are results
-                    (barq.el.currentListItemsDOM) && barq.keyboardNavigate(keyPressed);
+                    if (barq.el.currentListItemsDOM) barq.keyboardNavigate(keyPressed);
                 }
             });
 
@@ -596,7 +596,7 @@
                     var results = barq.searchListItem(barq.el.textInput.value, offset, barq.options.resultsPerPage);
 
                     // If there are results, append them to the list
-                    (results !== '') && barq.insertDataOnList(results);
+                    if (results !== '') barq.insertDataOnList(results);
                 }
             });
 
