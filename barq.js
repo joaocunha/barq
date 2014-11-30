@@ -277,7 +277,8 @@
             utils.addClass(barq.el.textInput, classNames.textInputWithList);
 
             // Sets the first item as active, so we can start our navigation from there
-            utils.addClass(barq.el.list.firstChild, classNames.activeItem);
+            if (barq.el.list.firstChild.className !== classNames.noResults)
+                utils.addClass(barq.el.list.firstChild, classNames.activeItem);
         };
 
         barq.hideList = function() {
@@ -552,12 +553,17 @@
                         barq.el.currentListItemsDOM = null;
                     }
 
+                    barq.showList();
+
                     return;
                 }
 
-                // ENTER selects the list item
+                // ENTER selects the active list item
                 if (keyPressed === KEYCODES.ENTER) {
-                    barq.selectListItem(barq.getActiveListItem());
+                    var activeItem = barq.getActiveListItem();
+
+                    if (activeItem) barq.selectListItem(activeItem);
+
                     return;
                 }
 
@@ -620,7 +626,7 @@
                 // Checks if the click was performed on the highlighted part
                 var item = e.target.className === classNames.match ? e.target.parentNode : e.target;
 
-                // Prevents triggering clicks on the scrollbar
+                // Prevents triggering clicks on the scrollbar & on empty results
                 if (item !== barq.el.list && item.className !== classNames.noResults) {
                     barq.selectListItem(item);
                 }
