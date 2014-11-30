@@ -169,7 +169,7 @@
                 }
             },
 
-            getNodeText: function(node) {
+            getTextNode: function(node) {
                 return (node && (node.innerText || node.textContent || node.innerHTML));
             },
 
@@ -220,7 +220,7 @@
             setupEvents();
 
             // Sets an initial selection if there's a preselected value or option
-            setInitialText();
+            initialSelection();
 
             // onload user callback, passing barq as `this`
             barq.options.onload.call(barq);
@@ -260,7 +260,7 @@
                 input.setAttribute('placeholder', barq.options.placeholderText);
             } else if (barq.options.useFirstOptionTextAsPlaceholder) {
                 // If null (default), use the first <option> text from the baseField
-                var firstOptionText = utils.getNodeText(barq.el.baseField.options[0]);
+                var firstOptionText = utils.getTextNode(barq.el.baseField.options[0]);
                 input.setAttribute('placeholder', firstOptionText);
             }
 
@@ -272,11 +272,11 @@
         };
 
         /**
-         * @function setInitialText
+         * @function initialSelection
          * Extends the "selected" property behavior to the autocomplete text input.
          */
-        var setInitialText = function() {
-            var optionText = utils.getNodeText(barq.el.preSelectedOption);
+        var initialSelection = function() {
+            var optionText = utils.getTextNode(barq.el.preSelectedOption);
             barq.el.textInput.value = optionText;
         };
 
@@ -340,12 +340,12 @@
         };
 
         /**
-         * @function selectListItem
+         * @function selectItem
          * Performs a list item selection (based on click or enter key, for example).
          * @param {HTMLLIElement} item The item to base the scrolling on.
          */
-        barq.selectListItem = function(item) {
-            var selectedText = utils.getNodeText(item);
+        barq.selectItem = function(item) {
+            var selectedText = utils.getTextNode(item);
 
             // Sets the selected item's text on the input
             barq.el.textInput.value = selectedText;
@@ -672,7 +672,7 @@
                 if (keyPressed === KEYCODES.ENTER) {
                     var activeItem = barq.getActiveListItem();
 
-                    if (activeItem) barq.selectListItem(activeItem);
+                    if (activeItem) barq.selectItem(activeItem);
 
                     return;
                 }
@@ -713,7 +713,7 @@
             // Selects the active item in case of pressing tab or leaving the field
             utils.addEventListener(barq.el.textInput, 'blur', function() {
                 if (!barq.preventBlurTrigger && barq.getActiveListItem()) {
-                    barq.selectListItem(barq.getActiveListItem());
+                    barq.selectItem(barq.getActiveListItem());
                 }
             });
 
@@ -745,7 +745,7 @@
 
                 // Prevents triggering clicks on the scrollbar & on empty results
                 if (item !== barq.el.list && item.className !== classNames.noResults) {
-                    barq.selectListItem(item);
+                    barq.selectItem(item);
                 }
             });
 
