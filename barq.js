@@ -208,19 +208,19 @@
             barq.el.preSelectedOption = barq.el.baseField.querySelector('[selected]');
 
             // Creates the empty <ul> element to hold the list items
-            barq.el.list = barq.createEmptyList();
+            barq.el.list = createEmptyList();
 
             // Extracts the items from the base field and stores them in memory as a string representation
-            barq.items = barq.extractDataFromBaseField();
+            barq.items = extractDataFromBaseField();
 
             // Fills the list element with the items
-            barq.replaceListData(barq.items);
+            replaceListData(barq.items);
 
             // Attaches all the event handlers
-            barq.setupEvents();
+            setupEvents();
 
             // Sets an initial selection if there's a preselected value or option
-            barq.setInitialText();
+            setInitialText();
 
             // onload user callback, passing barq as `this`
             barq.options.onload.call(barq);
@@ -275,7 +275,7 @@
          * @function setInitialText
          * Extends the "selected" property behavior to the autocomplete text input.
          */
-        barq.setInitialText = function() {
+        var setInitialText = function() {
             var optionText = utils.getNodeText(barq.el.preSelectedOption);
             barq.el.textInput.value = optionText;
         };
@@ -287,7 +287,7 @@
          *
          * @returns {String} A list of <li> items stored in one long string
          */
-        barq.extractDataFromBaseField = function() {
+        var extractDataFromBaseField = function() {
             // Removes the first option if required (DOM is faster than regex in this case)
             if (barq.options.removeFirstOptionFromSearch) {
                 barq.el.baseField.removeChild(barq.el.baseField.options[0]);
@@ -374,7 +374,7 @@
          *
          * @returns {HTMLUListElement} The <ul> element.
          */
-        barq.createEmptyList = function() {
+        var createEmptyList = function() {
             var list = doc.createElement('ul');
 
             list.setAttribute('class', classNames.dropdownList);
@@ -392,7 +392,7 @@
          *
          * @param {String} data A string containing the <li> items that will replace the current ones.
          */
-        barq.replaceListData = function(data) {
+        var replaceListData = function(data) {
             barq.el.list.innerHTML = data;
 
             barq.el.currentItemsDOM = barq.el.list.childNodes;
@@ -404,7 +404,7 @@
          *
          * @param {String} data A string containing the <li> items to be appended to the list.
          */
-        barq.insertDataOnList = function(data) {
+        var insertDataOnList = function(data) {
             barq.el.list.innerHTML += data;
 
             barq.el.currentItemsDOM = barq.el.list.childNodes;
@@ -429,7 +429,7 @@
         // and perform a `replace` to add highlighting.
         barq.search = function(query, offset) {
             // An array of matches
-            var matches = barq.filterList(query);
+            var matches = filterList(query);
 
             if (barq.options.enablePagination) {
                 offset = offset || 0;
@@ -446,14 +446,14 @@
             }
 
             if (query && matches.length) {
-                matches = barq.highlightMatches(query, matches);
+                matches = highlightMatches(query, matches);
             }
 
             if (offset === 0 && matches.length) {
-                barq.replaceListData(matches);
+                replaceListData(matches);
                 utils.addClass(barq.el.list.firstChild, classNames.activeItem);
             } else {
-                barq.insertDataOnList(matches);
+                insertDataOnList(matches);
             }
 
             return matches;
@@ -466,7 +466,7 @@
          * @param {String} [query] The search query to base the filtering against
          * @returns {Array} An array of matches
          */
-        barq.filterList = function(query) {
+        var filterList = function(query) {
             // Matches all list elements by default (for no query cases)
             var matchingRegex = /<li[^<]*<\/li>/gi;
 
@@ -488,7 +488,7 @@
          * @param {Array} matches The array of matches to look through
          * @returns {String} An updated string with the matches (<li> items) encapsulates in <em> tags
          */
-        barq.highlightMatches = function(query, matches) {
+        var highlightMatches = function(query, matches) {
             // Escapes the string so we get rid of special characters
             query = utils.escapeString(query);
 
@@ -502,12 +502,12 @@
          * @function noResultsFound
          * Creates an <li> item containing a "no results" message and inserts it into the list.
          */
-        barq.noResultsFound = function() {
+        var noResultsFound = function() {
             var template = '<li class="0">1</li>';
             var item = template.replace('0', classNames.noResults)
                                 .replace('1', barq.options.noResultsMessage);
 
-            barq.replaceListData(item);
+            replaceListData(item);
         };
 
         /**
@@ -556,7 +556,7 @@
          * Navigates up and down through the list, so we can select an item using a keyboard only.
          * @param {Integer} keyPressed The key pressed, either UP (38) or DOWN (40)
          */
-        barq.keyboardNavigate = function(keyPressed) {
+        var keyboardNavigate = function(keyPressed) {
             // The stored search results
             var items = barq.el.currentItemsDOM;
 
@@ -629,7 +629,7 @@
          * @function setupEvents
          * Just a basic events wrapper. Sets up all non-dynamic, initial events.
          */
-        barq.setupEvents = function() {
+        var setupEvents = function() {
 
             // TODO: Split the keyup logic into external functions
             utils.addEventListener(barq.el.textInput, 'keyup', function(e) {
@@ -659,7 +659,7 @@
                     var matches = barq.search(this.value);
 
                     if (matches.length < 1) {
-                        barq.noResultsFound();
+                        noResultsFound();
                         barq.el.currentItemsDOM = null;
                     }
 
@@ -694,7 +694,7 @@
                 // UP or DOWN arrows navigate through the list
                 if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
                     // Navigate only if there are results
-                    if (barq.el.currentItemsDOM) barq.keyboardNavigate(keyPressed);
+                    if (barq.el.currentItemsDOM) keyboardNavigate(keyPressed);
                 }
             });
 
@@ -703,7 +703,7 @@
                 var matches = barq.search(this.value);
 
                 if (matches.length < 1) {
-                    barq.noResultsFound();
+                    noResultsFound();
                     barq.el.currentItemsDOM = null;
                 }
 
