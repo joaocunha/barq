@@ -119,7 +119,7 @@
             @type int
             Pagination counter
         */
-        var currentPage = 1;
+        var currentPage = 0;
 
         barq.el = {
             baseField: baseField
@@ -353,20 +353,25 @@
         barq.search = function(query, offset) {
             // An array of matches
             var matches = barq.filterList(query);
-
+// console.log(matches);
+// console.log(matches.length);
             if (barq.options.enablePagination) {
                 offset = offset || 0;
                 var limit = barq.options.resultsPerPage;
 
-                if (offset >= 0) matches = matches.splice(offset, limit);
+                if (offset >= 0) {
+                    matches = matches.splice(offset, limit);
+                    console.log(offset);
+                }
             }
 
             if (matches.length) {
                 // Stores a DOM representation of the items every time a search is performed
                 matches = matches.join('');
             } else {
-                barq.noResultsFound();
-                barq.el.currentListItemsDOM = null;
+                console.log('a');
+                // barq.noResultsFound();
+                // barq.el.currentListItemsDOM = null;
             }
 
             if (query && matches.length) {
@@ -433,6 +438,7 @@
         // TODO: the current way of fetching more results is based on having an item on the viewport.
         // There might be a more elegant alternative
         barq.paginate = function() {
+
             // Stores the previsouly fetched elements
             var visibleItems = barq.el.list.children;
 
@@ -443,6 +449,7 @@
 
             // Not enough elements to require pagination
             if (paginationThreshold < 0) {
+                console.log('no pagination');
                 return -1;
             // When the scroll reaches the pagination threshold, we fetch the next resultset
             } else if (utils.isElementOnViewport(visibleItems[paginationThreshold])) {
@@ -592,9 +599,8 @@
             // Pagination is triggered onScroll
             utils.addEventListener(barq.el.list, 'scroll', function() {
                 var offset = barq.paginate();
-console.log(offset);
+
                 if (offset >= 0) {
-                    console.log('in');
                     // Fetch the results
                     var results = barq.search(barq.el.textInput.value, offset);
                 }
