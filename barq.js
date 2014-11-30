@@ -204,9 +204,6 @@
             // Creates the main text input that's gonna be used as an autocomplete
             barq.el.textInput = createTextInput();
 
-            // Extracts the pre-selected option from the base field, if any
-            barq.el.preSelectedOption = barq.el.baseField.querySelector('[selected]');
-
             // Creates the empty <ul> element to hold the list items
             barq.el.list = createEmptyList();
 
@@ -276,8 +273,11 @@
          * Extends the "selected" property behavior to the autocomplete text input.
          */
         var initialSelection = function() {
-            var optionText = utils.getTextNode(barq.el.preSelectedOption);
-            barq.el.textInput.value = optionText;
+            // var optionText = utils.getTextNode(barq.el.preSelectedOption);
+            // barq.el.textInput.value = optionText;
+
+            var option = barq.el.baseField.querySelector('[selected]');
+            if (option) barq.selectItem(option);
         };
 
         /**
@@ -356,7 +356,8 @@
             // Hides the list as we don't need it anymore
             barq.hideList();
 
-            var val = item.getAttribute('data-value');
+            // Works for both <li> items and <option> items
+            var val = item.getAttribute('data-value') ? item.getAttribute('data-value') : item.value;
 
             // Set the value back on the baseField
             barq.el.baseField.value = val;
