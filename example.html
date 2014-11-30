@@ -7,10 +7,15 @@
     <link type="text/css" href="barq.css" rel="stylesheet" media="all" />
 </head>
 <body>
-    <h3>List with 2500 airports</h3>
-    <p>The first 5 items have mixed values so we can test the regex.</p>
+    <h2>List with 2500 airports</h2>
 
-    <select id="barq" tabindex="12">
+    <h3>Manual loading, with parameters</h3>
+    <pre>
+var select = document.querySelector('#barq');
+var barq = new Barq(select).init();
+    </pre>
+
+    <select id="barq" tabindex="1">
         <option>Select an airport</option>
         <option value="1">Aalborg, Denmark (AAL)</option>
         <option value="2">Aalesund, Norway (AES)</option>
@@ -2516,7 +2521,10 @@
 
     <hr />
 
-    <select id="barq2" tabindex="13">
+    <h3>Lazy loaded instance</h3>
+    <pre>&lt;select data-barq&gt;</pre>
+
+    <select data-barq>
         <option>Select an airport</option>
         <option value="1">Aalborg, Denmark (AAL)</option>
         <option value="2">Aalesund, Norway (AES)</option>
@@ -2528,16 +2536,11 @@
         <option value="">Aberdeen, United Kingdom (ABZ)</option>
     </select>
 
-
-
     <script type="text/javascript" src="barq.js"></script>
 
     <script type="text/javascript">
         var select = document.querySelector('#barq');
         var barq = new Barq(select).init();
-
-        // var select2 = document.querySelector('#barq2');
-        // var barq2 = new Barq(select2).init();
     </script>
 </body>
 </html>
