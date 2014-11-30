@@ -23,69 +23,78 @@
 
         barq.options = {
             /**
-                enablePagination
-                @type bool
-                Fetches the matches with a limit. Specially useful for large resultsets.
-            */
+             * enablePagination
+             * @type {Boolean}
+             *
+             * Fetches the matches with a limit. Specially useful for large resultsets.
+             */
             enablePagination: opts.enablePagination || true,
 
             /**
-                resultsPerPage
-                @type int
-                Number of list items to fetch per page.
-            */
+             * resultsPerPage
+             * @type {Integer}
+             *
+             * Number of list items to fetch per page.
+             */
             resultsPerPage: opts.resultsPerPage || 50,
 
             /**
-                removeFirstOptionFromSearch
-                @type bool
-                If true, removes the first option element from the search. Useful when
-                it's something like "<option>Select a value</option>"
-            */
+             * removeFirstOptionFromSearch
+             * @type {Boolean}
+             *
+             * If true, removes the first option element from the search. Useful when
+             * it's something like "<option>Select a value</option>"
+             */
             removeFirstOptionFromSearch: opts.removeFirstOptionFromSearch || true,
 
             /**
-                useFirstOptionTextAsPlaceholder
-                @type bool
-                If true, uses the first option as a placeholder for the autocomplete.
-            */
+             * useFirstOptionTextAsPlaceholder
+             * @type {Boolean}
+             *
+             * If true, uses the first option as a placeholder for the autocomplete.
+             */
             useFirstOptionTextAsPlaceholder: opts.useFirstOptionTextAsPlaceholder || true,
 
             /**
-                placeholderText
-                @type null|string
-                Allows to set an arbitrary placeholder value, overriding first
-                option's text which is the default.
-            */
+             * placeholderText
+             * @type {null|String}
+             *
+             * Allows to set an arbitrary placeholder value, overriding first
+             * option's text which is the default.
+             */
             placeholderText: opts.placeholderText || null,
 
             /**
-                noResultsMessage
-                @type string
-                Message to show when no matches are found on the search.
-            */
+             * noResultsMessage
+             * @type {String}
+             *
+             * Message to show when no matches are found on the search.
+             */
             noResultsMessage: opts.noResultsMessage || 'No results found.',
 
             /**
-                onload
-                @type function
-                Called after instantiation, once.
-            */
+             * onload
+             * @type {Function}
+             *
+             * Callback called after instantiation, once.
+             */
             onload: opts.onload || function(){},
 
             /**
-                onchange
-                @type function
-                Called everytime an item is selected from the list.
-            */
+             * onchange
+             * @type {Function}
+             *
+             * Callback called everytime an item is selected from the list.
+             */
             onchange: opts.onchange || function(){}
         };
 
         /**
-            classNames
-            @type object
-            Holds all the classes to avoid code repetition
-        */
+         * classNames
+         * @type {Object}
+         *
+         * Holds all the class selectors
+         */
         var classNames = {
             // The <ul> element that holds all search results
             dropdownList: 'barq-list',
@@ -113,10 +122,11 @@
         };
 
         /**
-            KEYCODES
-            @type object
-            List of the navigation key codes we're interested at, in a constant format
-        */
+         * KEYCODES
+         * @type {Object}
+         *
+         * List of the navigation key codes we're interested at filtering.
+         */
         var KEYCODES = {
             TAB: 9,
             ENTER: 13,
@@ -133,7 +143,8 @@
 
         /**
          *  currentPage
-         *  @type int
+         *  @type {Integer}
+         *
          *  Pagination counter
          */
         var currentPage = 0;
@@ -344,6 +355,7 @@
         /**
          * @function selectItem
          * Performs a list item selection (based on click or enter key, for example).
+         *
          * @param {HTMLLIElement} item The item to base the scrolling on.
          */
         barq.selectItem = function(item) {
@@ -438,6 +450,7 @@
                 offset = offset || 0;
                 var limit = barq.options.resultsPerPage;
 
+                // Gets only a chunk of the results
                 if (offset >= 0) {
                     matches = matches.splice(offset, limit);
                 }
@@ -506,9 +519,10 @@
          * Creates an <li> item containing a "no results" message and inserts it into the list.
          */
         var noResultsFound = function() {
+            // A bit lame for templating, I know, but it's the only place needed
             var template = '<li class="0">1</li>';
             var item = template.replace('0', classNames.noResults)
-                                .replace('1', barq.options.noResultsMessage);
+                               .replace('1', barq.options.noResultsMessage);
 
             replaceListData(item);
         };
@@ -766,11 +780,9 @@
         // Todd Motto goes spartan against [].forEach.call() and I quite agree with his points,
         // but as a one-way loop that's used only once and needs no manipulation, this does the
         // trick quite well - http://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
-        [].forEach.call(lazyLoadBaseFields,
-            function(baseField) {
-                new win.Barq(baseField).init();
-            }
-        );
+        [].forEach.call(lazyLoadBaseFields, function(baseField) {
+            new win.Barq(baseField).init();
+        });
     })(); // end lazy load
 
 })(window, document);
