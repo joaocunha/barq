@@ -271,13 +271,15 @@
         /**
          * @function initialSelection
          * Extends the "selected" property behavior to the autocomplete text input.
+         *
+         * @returns {HTMLOptionElement|Null} The pre-selected <option> element, or null
          */
         var initialSelection = function() {
-            // var optionText = utils.getTextNode(barq.el.preSelectedOption);
-            // barq.el.textInput.value = optionText;
-
             var option = barq.el.baseField.querySelector('[selected]');
+
             if (option) barq.selectItem(option);
+
+            return option;
         };
 
         /**
