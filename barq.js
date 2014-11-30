@@ -153,7 +153,11 @@
             },
 
             addClass: function(el, className) {
-                el.classList ? el.classList.add(className) : el.className += ' ' + className;
+                if (el.classList) {
+                    el.classList.add(className);
+                } else {
+                     el.className += ' ' + className;
+                }
             },
 
             removeClass: function(el, className) {
@@ -185,7 +189,12 @@
             }
         };
 
-        // Sets up how the autocomplete should be initialized
+        /**
+         * @function init
+         * Just a wrapper for initialization.
+         *
+         * @returns {Object} An instance of Barq itself, containing all public methods & properties.
+         */
         barq.init = function() {
             // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
             // We don't remove the base element as it holds the `name` attribute and values,
@@ -220,7 +229,13 @@
             return barq;
         };
 
-        // This is the <input type="text" /> that will replace the base select element
+
+        /**
+         * @function createTextInput
+         * Creates the auto complete text input that replaces the original select element.
+         *
+         * @returns {HTMLInputElement} The newly-created text input
+         */
         barq.createTextInput = function() {
             var input = doc.createElement('input');
 
@@ -256,13 +271,22 @@
             return barq.el.baseField.nextElementSibling;
         };
 
-        // If the base element have an option with selected attribute
+        /**
+         * @function setInitialText
+         * Extends the "selected" property behavior to the autocomplete text input.
+         */
         barq.setInitialText = function() {
             var optionText = utils.getNodeText(barq.el.preSelectedOption);
             barq.el.textInput.value = optionText;
         };
 
-        // Grabs all the OPTION elements and replaces them by LI's, building a string containing all of them
+        /**
+         * @function extractDataFromBaseField
+         * Grabs all the <option> elements and replaces them by <li> elements,
+         * building a string containing all <li> items.
+         *
+         * @returns {String} A list of <li> items stored in one long string
+         */
         barq.extractDataFromBaseField = function() {
             // Removes the first option if required (DOM is faster than regex in this case)
             if (barq.options.removeFirstOptionFromSearch) {
@@ -344,7 +368,12 @@
             barq.options.onchange.call(barq);
         };
 
-        // Creates an empty <ul> element and inserts it after the autocomplete input.
+        /**
+         * @function createEmptyList
+         * Creates an empty <ul> element and inserts it after the autocomplete input.
+         *
+         * @returns {HTMLUListElement} The <ul> element.
+         */
         barq.createEmptyList = function() {
             var list = doc.createElement('ul');
 
@@ -357,22 +386,35 @@
             return barq.el.textInput.nextElementSibling;
         };
 
-        // Abstracted into a function in case we need to do additional logic
+        /**
+         * @function replaceListData
+         * Replaces the items on a list
+         *
+         * @param {String} data A string containing the <li> items that will replace the current ones.
+         */
         barq.replaceListData = function(data) {
             barq.el.list.innerHTML = data;
 
             barq.el.currentItemsDOM = barq.el.list.childNodes;
         };
 
-        // Abstracted into a function in case we need to do additional logic
+        /**
+         * @function insertDataOnList
+         * Appends data to the end of the list
+         *
+         * @param {String} data A string containing the <li> items to be appended to the list.
+         */
         barq.insertDataOnList = function(data) {
             barq.el.list.innerHTML += data;
 
             barq.el.currentItemsDOM = barq.el.list.childNodes;
         };
 
-        // Repositions and resizes the list when viewport size changes.
-        // A good option would be tether.js but it weights ~5kb (more than Barq itself) :(
+        /**
+         * @function repositionList
+         * Repositions and resizes the list when viewport size changes.
+         * A good alternative would be tether.js but it weights ~5kb (more than Barq itself) :(
+         */
         barq.repositionList = function() {
             var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
 
@@ -453,7 +495,10 @@
             return matches.replace(highlightRegex, formattedMatch);
         };
 
-        // Shown when no items were found on a search.
+        /**
+         * @function noResultsFound
+         * Creates an <li> item containing a "no results" message and inserts it into the list.
+         */
         barq.noResultsFound = function() {
             var template = '<li class="0">1</li>';
             var item = template.replace('0', classNames.noResults)
@@ -462,9 +507,13 @@
             barq.replaceListData(item);
         };
 
-        // Pagination
-        // TODO: the current way of fetching more results is based on having an item on the viewport.
-        // There might be a more elegant alternative
+        /**
+         * @function paginate
+         * Calculates where to start fetching the next set of items.
+         * It is based on having an item on the viewport, there might be more elegant solutions out there.
+         *
+         * @returns {Integer} The index from where to start fetching results from
+         */
         barq.paginate = function() {
 
             // Stores the previsouly fetched elements
@@ -473,6 +522,7 @@
             // Pagination is triggered when scrolling reaches the second last item.
             // This way we don't require the user to scroll down all the way (one pixel could
             // prevent triggering the pagination).
+            // TODO: store this threshold more elegantly
             var paginationThreshold = visibleItems.length - 2;
 
             // Not enough elements to require pagination
@@ -498,6 +548,11 @@
             return barq.el.list.querySelector('.' + classNames.activeItem);
         };
 
+        /**
+         * @function keyboardNavigate
+         * Navigates up and down through the list, so we can select an item using a keyboard only.
+         * @param {Integer} keyPressed The key pressed, either UP (38) or DOWN (40)
+         */
         barq.keyboardNavigate = function(keyPressed) {
             // The stored search results
             var items = barq.el.currentItemsDOM;
