@@ -202,7 +202,7 @@
             utils.addClass(barq.el.baseField, classNames.hidden);
 
             // Creates the main text input that's gonna be used as an autocomplete
-            barq.el.textInput = barq.createTextInput();
+            barq.el.textInput = createTextInput();
 
             // Extracts the pre-selected option from the base field, if any
             barq.el.preSelectedOption = barq.el.baseField.querySelector('[selected]');
@@ -236,7 +236,7 @@
          *
          * @returns {HTMLInputElement} The newly-created text input
          */
-        barq.createTextInput = function() {
+        var createTextInput = function() {
             var input = doc.createElement('input');
 
             // Only one class ATM, no need for fancy pants .addClass()
@@ -486,12 +486,15 @@
          *
          * @param {String} query The search query to highlight
          * @param {Array} matches The array of matches to look through
-         * @returns {String} An updated string with the matches encapsulates in <em> tags
+         * @returns {String} An updated string with the matches (<li> items) encapsulates in <em> tags
          */
         barq.highlightMatches = function(query, matches) {
+            // Escapes the string so we get rid of special characters
             query = utils.escapeString(query);
+
             var highlightRegex = new RegExp('(<li[^>]*>[^<]*)(' + query + ')([^<]*<\/li>)', 'gi');
             var formattedMatch = '$1<em class="' + classNames.match + '">$2</em>$3';
+
             return matches.replace(highlightRegex, formattedMatch);
         };
 
