@@ -759,4 +759,18 @@
         };
     }; // end win.Barq()
 
+    // Allows for lazy loading of barq instances
+    ;(function() {
+        var lazyLoadBaseFields = doc.querySelectorAll('[data-barq]');
+
+        // Todd Motto goes spartan against [].forEach.call() and I quite agree with his points,
+        // but as a one-way loop that's used only once and needs no manipulation, this does the
+        // trick quite well - http://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
+        [].forEach.call(lazyLoadBaseFields,
+            function(baseField) {
+                new win.Barq(baseField).init();
+            }
+        );
+    })(); // end lazy load
+
 })(window, document);
