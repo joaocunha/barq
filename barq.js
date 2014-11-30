@@ -34,7 +34,7 @@
                 @type int
                 Number of list items to fetch per page.
             */
-            resultsPerPage: opts.resultsPerPage || 10,
+            resultsPerPage: opts.resultsPerPage || 50,
 
             /**
                 removeFirstOptionFromSearch
