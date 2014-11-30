@@ -590,7 +590,13 @@
 
             // Focusing on the input opens up the items list
             utils.addEventListener(barq.el.textInput, 'focus', function() {
-                barq.search(this.value);
+                var matches = barq.search(this.value);
+
+                if (matches.length < 1) {
+                    barq.noResultsFound();
+                    barq.el.currentListItemsDOM = null;
+                }
+
                 barq.showList();
             });
 
