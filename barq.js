@@ -547,6 +547,12 @@
 
                 // Any key, except navigation keys like arrows, home, end, enter, esc...
                 if (!isNavigationKey) {
+                    // Scrolls the list to the top, as we are filtering
+                    barq.el.list.scrollTop = 0;
+
+                    // Resets the pagination
+                    currentPage = 0;
+
                     var matches = barq.search(this.value);
 
                     if (matches.length < 1) {
