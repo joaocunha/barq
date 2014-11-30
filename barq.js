@@ -87,13 +87,28 @@
             Holds all the classes to avoid code repetition
         */
         var classNames = {
+            // The <ul> element that holds all search results
             dropdownList: 'barq-list',
+
+            // The text input to perform the searches on
             textInput: 'barq-text-input',
+
+            // Vanity class to style the input when the list is currently being displayed
             textInputWithList: 'barq-input-text-expanded',
+
+            // Utility class for hiding the list
             hidden: 'barq-hidden',
+
+            // Utility class for showing the list
             visible: 'barq-visible',
+
+            // Used for keyboard navigation
             activeItem: 'barq-active-item',
+
+            // The item that shows no results
             noResults: 'barq-no-results',
+
+            // Emphasizes a match on a search (like 'Heat<em class="barq-match">hro</em>w Airport')
             match: 'barq-match'
         };
 
@@ -105,6 +120,7 @@
         var KEYCODES = {
             TAB: 9,
             ENTER: 13,
+            SHIFT: 16,
             ESC: 27,
             END: 35,
             HOME: 36,
@@ -116,10 +132,10 @@
         };
 
         /**
-            currentPage
-            @type int
-            Pagination counter
-        */
+         *  currentPage
+         *  @type int
+         *  Pagination counter
+         */
         var currentPage = 0;
 
         barq.el = {
@@ -149,12 +165,10 @@
                 }
             },
 
-            // Crossbrowser way to return the text of a dom node
             getNodeText: function(node) {
                 return (node && (node.innerText || node.textContent || node.innerHTML));
             },
 
-            // Detects if an element is visible on the viewport
             isElementOnViewport: function(el) {
                 var rect = el.getBoundingClientRect();
 
@@ -166,8 +180,6 @@
                 );
             },
 
-            // Escapes the regex operators from the search string
-            // TODO: make it customizable on options
             escapeString: function(text) {
                 return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
             }
@@ -190,10 +202,10 @@
             barq.el.list = barq.createEmptyList();
 
             // Extracts the items from the base field and stores them in memory as a string representation
-            barq.listItems = barq.extractDataFromBaseField();
+            barq.items = barq.extractDataFromBaseField();
 
-            // Fills the list element with the listItems
-            barq.replaceListData(barq.listItems);
+            // Fills the list element with the items
+            barq.replaceListData(barq.items);
 
             // Attaches all the event handlers
             barq.setupEvents();
@@ -272,9 +284,18 @@
             return htmlString;
         };
 
+        /**
+         * @function showList
+         * Shows the list element.
+         */
         barq.showList = function() {
+            // Makes sure to position the list properly everytime it is shown
             barq.repositionList();
+
+            // Shows the list
             utils.addClass(barq.el.list, classNames.visible);
+
+            // Adds a vanity class to the input
             utils.addClass(barq.el.textInput, classNames.textInputWithList);
 
             // Sets the first item as active, so we can start our navigation from there
@@ -282,13 +303,25 @@
                 utils.addClass(barq.el.list.firstChild, classNames.activeItem);
         };
 
+        /**
+         * @function hideList
+         * Hides the list element.
+         */
         barq.hideList = function() {
+            // Hides the list
             utils.removeClass(barq.el.list, classNames.visible);
+
+            // Removes the vanity class from the text input
             utils.removeClass(barq.el.textInput, classNames.textInputWithList);
         };
 
-        barq.selectListItem = function(listItem) {
-            var selectedText = utils.getNodeText(listItem);
+        /**
+         * @function selectListItem
+         * Performs a list item selection (based on click or enter key, for example).
+         * @param {HTMLLIElement} item The item to base the scrolling on.
+         */
+        barq.selectListItem = function(item) {
+            var selectedText = utils.getNodeText(item);
 
             // Sets the selected item's text on the input
             barq.el.textInput.value = selectedText;
@@ -299,7 +332,7 @@
             // Hides the list as we don't need it anymore
             barq.hideList();
 
-            var val = listItem.getAttribute('data-value');
+            var val = item.getAttribute('data-value');
 
             // Set the value back on the baseField
             barq.el.baseField.value = val;
@@ -328,14 +361,14 @@
         barq.replaceListData = function(data) {
             barq.el.list.innerHTML = data;
 
-            barq.el.currentListItemsDOM = barq.el.list.childNodes;
+            barq.el.currentItemsDOM = barq.el.list.childNodes;
         };
 
         // Abstracted into a function in case we need to do additional logic
         barq.insertDataOnList = function(data) {
             barq.el.list.innerHTML += data;
 
-            barq.el.currentListItemsDOM = barq.el.list.childNodes;
+            barq.el.currentItemsDOM = barq.el.list.childNodes;
         };
 
         // Repositions and resizes the list when viewport size changes.
@@ -379,7 +412,6 @@
                 utils.addClass(barq.el.list.firstChild, classNames.activeItem);
             } else {
                 barq.insertDataOnList(matches);
-
             }
 
             return matches;
@@ -403,7 +435,7 @@
                 matchingRegex = new RegExp('<li[^>]*>[^<]*' + query + '[^<]*<\/li>', 'gi');
             }
 
-            return barq.listItems.match(matchingRegex) || [];
+            return barq.items.match(matchingRegex) || [];
         };
 
         /**
@@ -457,13 +489,18 @@
             }
         };
 
+        /**
+         * @function getActiveListItem
+         * Gets the active list item. Used on keyboard navigation.
+         * @returns {HTMLLIElement}
+         */
         barq.getActiveListItem = function() {
             return barq.el.list.querySelector('.' + classNames.activeItem);
         };
 
         barq.keyboardNavigate = function(keyPressed) {
             // The stored search results
-            var items = barq.el.currentListItemsDOM;
+            var items = barq.el.currentItemsDOM;
 
             // No need to navigate if there's only one item in the list
             if (items.length <= 1) return;
@@ -495,8 +532,11 @@
             }
         };
 
-        // Triggered by keyboardNavigate(), it calculates the position
-        // of the item and scrolls the list to show it
+        /**
+         * @function scrollListItemIntoView
+         * Calculates the position of an item and scroll the list to it. Used on keyboard navigation.
+         * @param {HTMLLIElement} item The item to base the scrolling on.
+         */
         barq.scrollListItemIntoView = function(item) {
             // Stores the item `top` position on the list
             var itemTop = item.offsetTop;
@@ -527,8 +567,13 @@
             // ^ simply don't scroll otherwise.
         };
 
-        // Initial non-dynamic event setup
+        /**
+         * @function setupEvents
+         * Just a basic events wrapper. Sets up all non-dynamic, initial events.
+         */
         barq.setupEvents = function() {
+
+            // TODO: Split the keyup logic into external functions
             utils.addEventListener(barq.el.textInput, 'keyup', function(e) {
                 // Cross browser event object capturing
                 e = e || win.event;
@@ -557,7 +602,7 @@
 
                     if (matches.length < 1) {
                         barq.noResultsFound();
-                        barq.el.currentListItemsDOM = null;
+                        barq.el.currentItemsDOM = null;
                     }
 
                     barq.showList();
@@ -591,7 +636,7 @@
                 // UP or DOWN arrows navigate through the list
                 if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
                     // Navigate only if there are results
-                    if (barq.el.currentListItemsDOM) barq.keyboardNavigate(keyPressed);
+                    if (barq.el.currentItemsDOM) barq.keyboardNavigate(keyPressed);
                 }
             });
 
@@ -601,7 +646,7 @@
 
                 if (matches.length < 1) {
                     barq.noResultsFound();
-                    barq.el.currentListItemsDOM = null;
+                    barq.el.currentItemsDOM = null;
                 }
 
                 barq.showList();
@@ -627,8 +672,9 @@
             // We used mousedown instead of click to solve a race condition against blur
             // http://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event/10653160#10653160
             utils.addEventListener(barq.el.list, 'mousedown', function(e) {
+
                 // The mousedown is not enough (although required) to prevent the race
-                // condition, as there is DOM manipultion involved. This nasty hack
+                // condition, as there is DOM manipultion involved. This nasty trick
                 // takes care of it, but can definitely be improved.
                 barq.preventBlurTrigger = true;
 
