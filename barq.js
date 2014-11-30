@@ -353,25 +353,19 @@
         barq.search = function(query, offset) {
             // An array of matches
             var matches = barq.filterList(query);
-// console.log(matches);
-// console.log(matches.length);
+
             if (barq.options.enablePagination) {
                 offset = offset || 0;
                 var limit = barq.options.resultsPerPage;
 
                 if (offset >= 0) {
                     matches = matches.splice(offset, limit);
-                    console.log(offset);
                 }
             }
 
             if (matches.length) {
                 // Stores a DOM representation of the items every time a search is performed
                 matches = matches.join('');
-            } else {
-                console.log('a');
-                // barq.noResultsFound();
-                // barq.el.currentListItemsDOM = null;
             }
 
             if (query && matches.length) {
@@ -449,7 +443,6 @@
 
             // Not enough elements to require pagination
             if (paginationThreshold < 0) {
-                console.log('no pagination');
                 return -1;
             // When the scroll reaches the pagination threshold, we fetch the next resultset
             } else if (utils.isElementOnViewport(visibleItems[paginationThreshold])) {
@@ -552,7 +545,13 @@
 
                 // Any key, except navigation keys like arrows, home, end, enter, esc...
                 if (!isNavigationKey) {
-                    barq.search(this.value);
+                    var matches = barq.search(this.value);
+
+                    if (matches.length < 1) {
+                        barq.noResultsFound();
+                        barq.el.currentListItemsDOM = null;
+                    }
+
                     return;
                 }
 
