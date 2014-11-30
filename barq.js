@@ -21,6 +21,9 @@
         // For extending the options in case the user passes the parameter
         var opts = options || {};
 
+        // Stores the base field on the instance
+        barq.baseField = baseField;
+
         barq.options = {
             /**
              * enablePagination
@@ -149,10 +152,6 @@
          */
         var currentPage = 0;
 
-        barq.el = {
-            baseField: baseField
-        };
-
         // A few tiny crossbrowser DOM utilities so we can drop jQuery
         var utils = {
             addEventListener: function(el, eventName, handler) {
@@ -210,13 +209,13 @@
             // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
             // We don't remove the base element as it holds the `name` attribute and values,
             // so it's useful in case of form submission.
-            utils.addClass(barq.el.baseField, classNames.hidden);
+            utils.addClass(barq.baseField, classNames.hidden);
 
             // Creates the main text input that's gonna be used as an autocomplete
-            barq.el.textInput = createTextInput();
+            barq.textInput = createTextInput();
 
             // Creates the empty <ul> element to hold the list items
-            barq.el.list = createEmptyList();
+            barq.list = createEmptyList();
 
             // Extracts the items from the base field and stores them in memory as a string representation
             barq.items = extractDataFromBaseField();
@@ -257,26 +256,26 @@
             input.setAttribute('spellcheck', 'false');
 
             // Replicates the tabindex from the basefield...
-            input.setAttribute('tabindex', barq.el.baseField.tabIndex);
+            input.setAttribute('tabindex', barq.baseField.tabIndex);
 
             // ...and removes it from the basefield
             // http://stackoverflow.com/a/5192919/1411163
-            barq.el.baseField.setAttribute('tabindex', '-1');
+            barq.baseField.setAttribute('tabindex', '-1');
 
             // Checks for arbitrary text for the placeholder
             if (barq.options.placeholderText) {
                 input.setAttribute('placeholder', barq.options.placeholderText);
             } else if (barq.options.useFirstOptionTextAsPlaceholder) {
                 // If null (default), use the first <option> text from the baseField
-                var firstOptionText = utils.getTextNode(barq.el.baseField.options[0]);
+                var firstOptionText = utils.getTextNode(barq.baseField.options[0]);
                 input.setAttribute('placeholder', firstOptionText);
             }
 
             // Insert the input field right after the base select element
-            barq.el.baseField.insertAdjacentHTML('afterend', input.outerHTML);
+            barq.baseField.insertAdjacentHTML('afterend', input.outerHTML);
 
             // We grab it back from the DOM, as insertAdjecentHTML doesn't return the inserted element
-            return barq.el.baseField.nextElementSibling;
+            return barq.baseField.nextElementSibling;
         };
 
         /**
@@ -286,7 +285,7 @@
          * @returns {HTMLOptionElement|Null} The pre-selected <option> element, or null
          */
         var initialSelection = function() {
-            var option = barq.el.baseField.querySelector('[selected]');
+            var option = barq.baseField.querySelector('[selected]');
 
             if (option) barq.selectItem(option);
 
@@ -303,12 +302,12 @@
         var extractDataFromBaseField = function() {
             // Removes the first option if required (DOM is faster than regex in this case)
             if (barq.options.removeFirstOptionFromSearch) {
-                barq.el.baseField.removeChild(barq.el.baseField.options[0]);
+                barq.baseField.removeChild(barq.baseField.options[0]);
             }
 
             // Transforms all the <option> elements in <li> elements.
             // The data-value attribute carries the original <option> value.
-            var htmlString = barq.el.baseField.innerHTML;
+            var htmlString = barq.baseField.innerHTML;
             var regex = /<option(?:[^>]*?value="([^"]*?)"|)[^>]*?>(.*?)<\/option>\n?/gi;
             var li = '<li data-value="$1">$2</li>';
             htmlString = htmlString.replace(regex, li);
@@ -330,14 +329,14 @@
             barq.repositionList();
 
             // Shows the list
-            utils.addClass(barq.el.list, classNames.visible);
+            utils.addClass(barq.list, classNames.visible);
 
             // Adds a vanity class to the input
-            utils.addClass(barq.el.textInput, classNames.textInputWithList);
+            utils.addClass(barq.textInput, classNames.textInputWithList);
 
             // Sets the first item as active, so we can start our navigation from there
-            if (barq.el.list.firstChild.className !== classNames.noResults)
-                utils.addClass(barq.el.list.firstChild, classNames.activeItem);
+            if (barq.list.firstChild.className !== classNames.noResults)
+                utils.addClass(barq.list.firstChild, classNames.activeItem);
         };
 
         /**
@@ -346,10 +345,10 @@
          */
         barq.hideList = function() {
             // Hides the list
-            utils.removeClass(barq.el.list, classNames.visible);
+            utils.removeClass(barq.list, classNames.visible);
 
             // Removes the vanity class from the text input
-            utils.removeClass(barq.el.textInput, classNames.textInputWithList);
+            utils.removeClass(barq.textInput, classNames.textInputWithList);
         };
 
         /**
@@ -362,7 +361,7 @@
             var selectedText = utils.getTextNode(item);
 
             // Sets the selected item's text on the input
-            barq.el.textInput.value = selectedText;
+            barq.textInput.value = selectedText;
 
             // Stores the text on barq itself
             barq.text = selectedText;
@@ -374,7 +373,7 @@
             var val = item.getAttribute('data-value') ? item.getAttribute('data-value') : item.value;
 
             // Set the value back on the baseField
-            barq.el.baseField.value = val;
+            barq.baseField.value = val;
 
             // Store the value on Barq itself
             barq.value = val;
@@ -395,10 +394,10 @@
             list.setAttribute('class', classNames.dropdownList);
 
             // Insert the list right after the autocomplete input
-            barq.el.textInput.insertAdjacentHTML('afterend', list.outerHTML);
+            barq.textInput.insertAdjacentHTML('afterend', list.outerHTML);
 
             // We grab it back from the DOM, as insertAdjecentHTML doesn't return the inserted element
-            return barq.el.textInput.nextElementSibling;
+            return barq.textInput.nextElementSibling;
         };
 
         /**
@@ -408,9 +407,9 @@
          * @param {String} data A string containing the <li> items that will replace the current ones.
          */
         var replaceListData = function(data) {
-            barq.el.list.innerHTML = data;
+            barq.list.innerHTML = data;
 
-            barq.el.currentItemsDOM = barq.el.list.childNodes;
+            barq.currentItemsDOM = barq.list.childNodes;
         };
 
         /**
@@ -420,9 +419,9 @@
          * @param {String} data A string containing the <li> items to be appended to the list.
          */
         var insertDataOnList = function(data) {
-            barq.el.list.innerHTML += data;
+            barq.list.innerHTML += data;
 
-            barq.el.currentItemsDOM = barq.el.list.childNodes;
+            barq.currentItemsDOM = barq.list.childNodes;
         };
 
         /**
@@ -431,11 +430,11 @@
          * A good alternative would be tether.js but it weights ~5kb (more than Barq itself) :(
          */
         barq.repositionList = function() {
-            var topPosition = Math.floor((barq.el.textInput.offsetTop + parseInt(barq.el.textInput.offsetHeight, 10)));
+            var topPosition = Math.floor((barq.textInput.offsetTop + parseInt(barq.textInput.offsetHeight, 10)));
 
-            barq.el.list.style.top = topPosition + 'px';
-            barq.el.list.style.left = barq.el.textInput.offsetLeft + 'px';
-            barq.el.list.style.width = barq.el.textInput.offsetWidth + 'px';
+            barq.list.style.top = topPosition + 'px';
+            barq.list.style.left = barq.textInput.offsetLeft + 'px';
+            barq.list.style.width = barq.textInput.offsetWidth + 'px';
         };
 
         // We search on the items list (string) with `match`, which returns an array of matches.
@@ -467,7 +466,7 @@
 
             if (offset === 0 && matches.length) {
                 replaceListData(matches);
-                utils.addClass(barq.el.list.firstChild, classNames.activeItem);
+                utils.addClass(barq.list.firstChild, classNames.activeItem);
             } else {
                 insertDataOnList(matches);
             }
@@ -537,7 +536,7 @@
         barq.paginate = function() {
 
             // Stores the previsouly fetched elements
-            var visibleItems = barq.el.list.children;
+            var visibleItems = barq.list.children;
 
             // Pagination is triggered when scrolling reaches the second last item.
             // This way we don't require the user to scroll down all the way (one pixel could
@@ -565,7 +564,7 @@
          * @returns {HTMLLIElement}
          */
         barq.getActiveListItem = function() {
-            return barq.el.list.querySelector('.' + classNames.activeItem);
+            return barq.list.querySelector('.' + classNames.activeItem);
         };
 
         /**
@@ -575,7 +574,7 @@
          */
         var keyboardNavigate = function(keyPressed) {
             // The stored search results
-            var items = barq.el.currentItemsDOM;
+            var items = barq.currentItemsDOM;
 
             // No need to navigate if there's only one item in the list
             if (items.length <= 1) return;
@@ -620,10 +619,10 @@
             var itemHeight = item.offsetHeight;
 
             // Stores the list height
-            var listHeight = barq.el.list.offsetHeight;
+            var listHeight = barq.list.offsetHeight;
 
             // Stores the scroll position of the list
-            var listScroll = barq.el.list.scrollTop;
+            var listScroll = barq.list.scrollTop;
 
             // Check if the item is BEFORE the list scroll area (visible elements)
             var itemIsBeforeScrollArea = itemTop <= listScroll;
@@ -633,10 +632,10 @@
 
             if (itemIsBeforeScrollArea) {
                 // Scroll the list UP to show the active item on top
-                barq.el.list.scrollTop = itemTop;
+                barq.list.scrollTop = itemTop;
             } else if (itemIsAfterScrollArea) {
                 // Scrolls the list DOWN to show the active item on bottom
-                barq.el.list.scrollTop = (itemTop - listHeight) + itemHeight;
+                barq.list.scrollTop = (itemTop - listHeight) + itemHeight;
             }
 
             // ^ simply don't scroll otherwise.
@@ -649,7 +648,7 @@
         var setupEvents = function() {
 
             // TODO: Split the keyup logic into external functions
-            utils.addEventListener(barq.el.textInput, 'keyup', function(e) {
+            utils.addEventListener(barq.textInput, 'keyup', function(e) {
                 // Cross browser event object capturing
                 e = e || win.event;
 
@@ -668,7 +667,7 @@
                 // Any key, except navigation keys like arrows, home, end, enter, esc...
                 if (!isNavigationKey) {
                     // Scrolls the list to the top, as we are filtering
-                    barq.el.list.scrollTop = 0;
+                    barq.list.scrollTop = 0;
 
                     // Resets the pagination
                     currentPage = 0;
@@ -677,7 +676,7 @@
 
                     if (matches.length < 1) {
                         noResultsFound();
-                        barq.el.currentItemsDOM = null;
+                        barq.currentItemsDOM = null;
                     }
 
                     barq.showList();
@@ -701,7 +700,7 @@
                 }
             });
 
-            utils.addEventListener(barq.el.textInput, 'keydown', function(e) {
+            utils.addEventListener(barq.textInput, 'keydown', function(e) {
                 // Cross browser event object capturing
                 e = e || win.event;
 
@@ -711,42 +710,42 @@
                 // UP or DOWN arrows navigate through the list
                 if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
                     // Navigate only if there are results
-                    if (barq.el.currentItemsDOM) keyboardNavigate(keyPressed);
+                    if (barq.currentItemsDOM) keyboardNavigate(keyPressed);
                 }
             });
 
             // Focusing on the input opens up the items list
-            utils.addEventListener(barq.el.textInput, 'focus', function() {
+            utils.addEventListener(barq.textInput, 'focus', function() {
                 var matches = barq.search(this.value);
 
                 if (matches.length < 1) {
                     noResultsFound();
-                    barq.el.currentItemsDOM = null;
+                    barq.currentItemsDOM = null;
                 }
 
                 barq.showList();
             });
 
             // Selects the active item in case of pressing tab or leaving the field
-            utils.addEventListener(barq.el.textInput, 'blur', function() {
+            utils.addEventListener(barq.textInput, 'blur', function() {
                 if (!barq.preventBlurTrigger && barq.getActiveListItem()) {
                     barq.selectItem(barq.getActiveListItem());
                 }
             });
 
             // Pagination is triggered onScroll
-            utils.addEventListener(barq.el.list, 'scroll', function() {
+            utils.addEventListener(barq.list, 'scroll', function() {
                 var offset = barq.paginate();
 
                 if (offset >= 0) {
                     // Fetch the results
-                    var results = barq.search(barq.el.textInput.value, offset);
+                    var results = barq.search(barq.textInput.value, offset);
                 }
             });
 
             // We used mousedown instead of click to solve a race condition against blur
             // http://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event/10653160#10653160
-            utils.addEventListener(barq.el.list, 'mousedown', function(e) {
+            utils.addEventListener(barq.list, 'mousedown', function(e) {
 
                 // The mousedown is not enough (although required) to prevent the race
                 // condition, as there is DOM manipultion involved. This nasty trick
@@ -761,7 +760,7 @@
                 var item = e.target.className === classNames.match ? e.target.parentNode : e.target;
 
                 // Prevents triggering clicks on the scrollbar & on empty results
-                if (item !== barq.el.list && item.className !== classNames.noResults) {
+                if (item !== barq.list && item.className !== classNames.noResults) {
                     barq.selectItem(item);
                 }
             });
