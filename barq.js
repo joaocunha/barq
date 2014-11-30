@@ -463,6 +463,9 @@
             // The stored search results
             var items = barq.el.currentListItemsDOM;
 
+            // No need to navigate if there's only one item in the list
+            if (items.length <= 1) return;
+
             // Stores the currently active item
             var activeItem = barq.getActiveListItem();
 
@@ -589,8 +592,9 @@
             // Pagination is triggered onScroll
             utils.addEventListener(barq.el.list, 'scroll', function() {
                 var offset = barq.paginate();
-
+console.log(offset);
                 if (offset >= 0) {
+                    console.log('in');
                     // Fetch the results
                     var results = barq.search(barq.el.textInput.value, offset);
                 }
