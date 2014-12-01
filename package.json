@@ -13,9 +13,13 @@
   },
 
   "scripts": {
-    "jscs": "jscs app.js",
+    "jscs": "jscs *.js",
     "validate": "gulp validate"
   },
+
+  "precommit": [
+    "jscs"
+  ],
 
   "devDependencies": {
     "gulp": "^3.8.10",
