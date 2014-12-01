@@ -56,8 +56,6 @@ Example:
 > causing the bug, and potential solutions (and your opinions on their
 > merits).
 
-
-<a name="features"></a>
 ## Feature requests
 
 Feature requests are welcome. But take a moment to find out whether your idea
@@ -78,6 +76,11 @@ might not want to merge into the project.
 Please adhere to the [coding conventions](https://github.com/joaocunha/barq/blob/master/.jscsrc)
 used throughout the project (whitespace, accurate comments, etc.) and any other
 requirements (such as test coverage).
+
+Keep in mind the goal of barq is to be _the fastest_ auto-complete widget out there,
+in both performance and file size. With an average file size of 2.5kb after GZIP, we
+should strive to write code as efficient as possible. Therefore, there is no point in
+adding external libraries (jQuery, lodash, etc) as dependencies.
 
 Follow this process if you'd like your work considered for inclusion in the
 project:

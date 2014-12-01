@@ -3,9 +3,9 @@ barq
 
 Client-side autocomplete
 
-Wanna help?
-===========
+Contributing
+============
 
-[Issues](https://github.com/joaocunha/barq/issues) is your starting point.
+The [issue tracker](https://github.com/joaocunha/barq/issues) is your starting point.
 
-Please try sticking to the coding standards ([this](https://github.com/joaocunha/barq/issues/25) will enforce them) and also to keep the footprint to a minimum. That basically means no dependencies should be added, at all.
+Make sure to read our [contribution guidelines](https://github.com/joaocunha/barq/blob/master/CONTRIBUTING.MD), too.
