@@ -11,9 +11,7 @@
     "url": "https://github.com/joaocunha/barq"
   },
   "scripts": {
-    "jscs": "jscs *.js",
-    "validate": "gulp validate",
-    "jshint": "jshint *.js"
+    "validate": "gulp validate"
   },
   "precommit": [
     "validate"
