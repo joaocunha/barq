@@ -10,10 +10,14 @@ var path = 'barq.js';
 gulp.task('lint', function() {
     return gulp.src(path)
         .pipe(jscs())
+        .pipe(notify({
+            title: 'jscs passed',
+            message: 'Cheers for sticking to the coding guidelines.',
+        }))
         .pipe(jshint())
         .pipe(notify({
-            title: 'JSHint',
-            message: 'JSHint Passed. Let it fly!',
+            title: 'JSHint passed',
+            message: 'Crockford would be proud. Oh, wait.',
         }))
         .pipe(jshint.reporter('default'));
 });
