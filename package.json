@@ -1,0 +1,18 @@
+{
+    "author": "Joao Cunha <joao@joaocunha.net>",
+    "description": "Barq - a client side auto-complete",
+    "name": "barq",
+    "version": "0.0.1",
+    "private": true,
+    "homepage": "https://github.com/joaocunha/barq",
+    "license": "MIT",
+
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/joaocunha/barq"
+    },
+
+    "devDependencies": {
+        "jscs": "^1.8.1"
+    }
+}
