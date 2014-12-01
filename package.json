@@ -13,10 +13,10 @@
   "scripts": {
     "jscs": "jscs *.js",
     "validate": "gulp validate",
-    "jshint": "jshint *.js --reporter"
+    "jshint": "jshint *.js"
   },
   "precommit": [
-    "jscs"
+    "validate"
   ],
   "devDependencies": {
     "gulp": "^3.8.10",

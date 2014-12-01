@@ -2,17 +2,11 @@ var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var jscs = require('gulp-jscs');
 
-gulp.task('jscs', function() {
+gulp.task('lint', function() {
     return gulp.src('barq.js')
-        .pipe(jscs());
-});
-
-gulp.task('jshint', function() {
-    return gulp.src('barq.js')
+        .pipe(jscs())
         .pipe(jshint())
         .pipe(jshint.reporter('default'));
 });
 
-gulp.task('validate', ['jscs', 'jshint']);
-
-gulp.task('default', ['validate']);
+gulp.task('validate', ['lint']);
