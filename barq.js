@@ -751,7 +751,7 @@
 
                 if (offset >= 0) {
                     // Fetch the results
-                    var results = barq.search(barq.textInput.value, offset);
+                    barq.search(barq.textInput.value, offset);
                 }
             });
 
