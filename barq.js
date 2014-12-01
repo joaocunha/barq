@@ -667,7 +667,7 @@
                 // Filter out navigation keys
                 var isNavigationKey = false;
                 for (var key in KEYCODES) {
-                    if (keyPressed == KEYCODES[key]) {
+                    if (keyPressed === KEYCODES[key]) {
                         isNavigationKey = true;
                         break;
                     }
