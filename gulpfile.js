@@ -11,12 +11,12 @@ gulp.task('lint', function() {
     return gulp.src(path)
         .pipe(jscs())
         .pipe(notify({
-            title: 'jscs passed',
+            title: '✔ jscs passed',
             message: 'Cheers for sticking to the coding guidelines.',
         }))
         .pipe(jshint())
         .pipe(notify({
-            title: 'JSHint passed',
+            title: '✔ JSHint passed',
             message: 'Crockford would be proud. Oh, wait.',
         }))
         .pipe(jshint.reporter('default'));
