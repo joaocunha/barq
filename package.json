@@ -12,6 +12,8 @@
   },
   "devDependencies": {
     "gulp": "^3.8.10",
-    "jscs": "^1.8.1"
+    "jscs": "^1.8.1",
+    "jshint": "^2.5.10",
+    "precommit-hook": "^1.0.7"
   }
 }
