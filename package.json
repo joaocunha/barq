@@ -11,10 +11,10 @@
     "url": "https://github.com/joaocunha/barq"
   },
   "scripts": {
-    "validate": "gulp validate"
+    "build": "gulp build"
   },
   "precommit": [
-    "validate"
+    "build"
   ],
   "devDependencies": {
     "gulp": "^3.8.10",

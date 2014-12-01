@@ -24,4 +24,4 @@ gulp.task('compress', function() {
         .pipe(gulp.dest(''));
 });
 
-gulp.task('validate', ['lint', 'compress']);
+gulp.task('build', ['lint', 'compress']);

@@ -18,14 +18,16 @@
   "regexp": true,
   "regexdash": false,
   "shadow": false,
-  "supernew": true,
+  "supernew": false,
   "undef": true,
+  "devel": false,
 
   "newcap": true,
   "noempty": true,
   "onevar": false,
   "trailing": true,
   "white": true,
+  "strict": true,
 
   "latedef": true,
   "quotmark": true,
