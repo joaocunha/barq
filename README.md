@@ -1,11 +1,11 @@
 barq
 ====
 
-barq is a client-side auto-complete for large datasets.
+barq is a client-side autocomplete for large datasets.
 
-Ideally, the number of options in a drop-down list [shouldn't exceed ~15](http://baymard.com/blog/drop-down-usability) - if that's the case, it's good to use an auto-complete to improve the user experience.
+Ideally, the number of options in a drop-down list [shouldn't exceed ~15](http://baymard.com/blog/drop-down-usability) - if that's the case, it's good to use an autocomplete to improve the user experience.
 
-For fields like a country-selector (around 200 elements), there are plenty of client-side libs that do the job quite well. But when it comes to large datasets like in flights and hotels price comparison websites, the only solution so far was to use an auto-complete that fetches data from the server everytime you press a key.
+For fields like a country-selector (around 200 elements), there are plenty of client-side libs that do the job quite well. But when it comes to large datasets like in flights and hotels price comparison websites, the only solution so far was to use an autocomplete that fetches data from the server everytime you press a key.
 
 Albeit being light enough to enhance any `<select>` element, that's when barq really excels. By following the old adage "keep DOM manipulation to a minimum", barq's regex powered core is able to filter through thousands of elements at lightning-fast speed.
 
