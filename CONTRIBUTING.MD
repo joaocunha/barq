@@ -1,7 +1,5 @@
 # Contributing to barq
 
-(guidelines borrowed from [normalize.css](https://github.com/necolas/normalize.css/blob/master/CONTRIBUTING.md))
-
 Please take a moment to review this document in order to make the contribution
 process easy and effective for everyone involved.
 
@@ -10,6 +8,7 @@ the developers managing and developing this open source project. In return,
 they should reciprocate that respect in addressing your issue or assessing
 patches and features.
 
+These guidelines were borrowed from the amazing [normalize.css](https://github.com/necolas/normalize.css/blob/master/CONTRIBUTING.md)
 
 ## Using the issue tracker
 
