@@ -9,7 +9,9 @@ For fields like a country-selector (around 200 elements), there are plenty of cl
 
 Albeit being light enough to enhance any `<select>` element, that's when barq really excels. By following the old adage "keep DOM manipulation to a minimum", barq's regex powered core is able to filter through thousands of elements at lightning-fast speed.
 
-barq can enhance the user experience and save you dozens of HTTP requests while doing it.
+The ideal usage scenario is when the data can be cached by the server, so it serves it faster and with no queries to the database. But you need to find the right balance - you don't load humongous chunks of HTML.
+
+If used properly, barq can enhance the user experience and save you dozens of HTTP requests while doing it.
 
 ## Main features:
 
