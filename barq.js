@@ -6,7 +6,7 @@
  *
  * @author João Cunha - joao@joaocunha.net - twitter.com/@joaocunha
  *
- * Thanks to all contributors, specially @Ahmad-Dukhan, @Ghostavio, @kumailht and @gxx
+ * Thanks to all contributors, specially @bhappyz, @ghostavio, @kumailht and @gxx
  */
 
 ;(function(win, doc, undefined) {
@@ -81,7 +81,7 @@
              *
              * Callback called after instantiation, once.
              */
-            onload: opts.onload || function(){},
+            onload: opts.onload || function() {},
 
             /**
              * onchange
@@ -89,7 +89,7 @@
              *
              * Callback called everytime an item is selected from the list.
              */
-            onchange: opts.onchange || function(){}
+            onchange: opts.onchange || function() {}
         };
 
         /**
@@ -166,7 +166,7 @@
                 if (el.classList) {
                     el.classList.add(className);
                 } else {
-                     el.className += ' ' + className;
+                    el.className += ' ' + className;
                 }
             },
 
@@ -236,7 +236,6 @@
             return barq;
         };
 
-
         /**
          * @function createTextInput
          * Creates the auto complete text input that replaces the original select element.
@@ -259,7 +258,7 @@
             input.setAttribute('tabindex', barq.baseField.tabIndex);
 
             // ...and removes it from the basefield
-            // http://stackoverflow.com/a/5192919/1411163
+            // See: http://stackoverflow.com/a/5192919/1411163
             barq.baseField.setAttribute('tabindex', '-1');
 
             // Checks for arbitrary text for the placeholder
@@ -287,7 +286,9 @@
         var initialSelection = function() {
             var option = barq.baseField.querySelector('[selected]');
 
-            if (option) barq.selectItem(option);
+            if (option) {
+                barq.selectItem(option);
+            }
 
             return option;
         };
@@ -335,8 +336,9 @@
             utils.addClass(barq.textInput, classNames.textInputWithList);
 
             // Sets the first item as active, so we can start our navigation from there
-            if (barq.list.firstChild.className !== classNames.noResults)
+            if (barq.list.firstChild.className !== classNames.noResults) {
                 utils.addClass(barq.list.firstChild, classNames.activeItem);
+            }
         };
 
         /**
@@ -577,7 +579,9 @@
             var items = barq.currentItemsDOM;
 
             // No need to navigate if there's only one item in the list
-            if (items.length <= 1) return;
+            if (items.length <= 1) {
+                return;
+            }
 
             // Stores the currently active item
             var activeItem = barq.getActiveListItem();
@@ -588,10 +592,14 @@
             // Prevent looping from first to last / last to first
             if (keyPressed === KEYCODES.UP) {
                 // Actives the previous item only if it's not the first item of the list
-                if (activeItem.previousElementSibling) itemToActivate = activeItem.previousElementSibling;
+                if (activeItem.previousElementSibling) {
+                    itemToActivate = activeItem.previousElementSibling;
+                }
             } else {
                 // Don't activate the next item if it's the last one
-                if (activeItem.nextElementSibling) itemToActivate = activeItem.nextElementSibling;
+                if (activeItem.nextElementSibling) {
+                    itemToActivate = activeItem.nextElementSibling;
+                }
             }
 
             if (itemToActivate) {
@@ -628,7 +636,7 @@
             var itemIsBeforeScrollArea = itemTop <= listScroll;
 
             // Check if the item is AFTER the list scroll area (visible elements)
-            var itemIsAfterScrollArea = itemTop >= ((listScroll + listHeight ) - itemHeight);
+            var itemIsAfterScrollArea = itemTop >= ((listScroll + listHeight) - itemHeight);
 
             if (itemIsBeforeScrollArea) {
                 // Scroll the list UP to show the active item on top
@@ -658,7 +666,7 @@
                 // Filter out navigation keys
                 var isNavigationKey = false;
                 for (var key in KEYCODES) {
-                    if (keyPressed === KEYCODES[key]) {
+                    if (keyPressed == KEYCODES[key]) {
                         isNavigationKey = true;
                         break;
                     }
@@ -688,7 +696,9 @@
                 if (keyPressed === KEYCODES.ENTER) {
                     var activeItem = barq.getActiveListItem();
 
-                    if (activeItem) barq.selectItem(activeItem);
+                    if (activeItem) {
+                        barq.selectItem(activeItem);
+                    }
 
                     return;
                 }
@@ -710,7 +720,9 @@
                 // UP or DOWN arrows navigate through the list
                 if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {
                     // Navigate only if there are results
-                    if (barq.currentItemsDOM) keyboardNavigate(keyPressed);
+                    if (barq.currentItemsDOM) {
+                        keyboardNavigate(keyPressed);
+                    }
                 }
             });
 
