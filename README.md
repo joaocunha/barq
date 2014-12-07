@@ -23,25 +23,27 @@ If used properly, barq can enhance the user experience and save you dozens of HT
  - **Library agnostic:** it is written in pure VanillaJS™.
  - **Well supported:** works in IE9+ and all modern browsers, including mobile.
 
-## Basic usage
+## Lazy instance
 ```html
 <select data-barq>
     <option>Select a guitar model</option>
-    <option>Grigson Les Pool</option>
-    <option>Fonder Star O'Caster</option>
-    <option>Wash and Burn N3</option>
+    <option value="1">Grigson Les Pool</option>
+    <option value="2">Fonder Star O'Caster</option>
+    <option value="3">Wash and Burn N3</option>
 </select>
 
 <script src="barq.min.js"></script>
 ```
 
-## Advanced usage
+## Manual instance + parameters
 ```html
 <select id="guitars">
-    <option>Grigson Les Pool</option>
-    <option>Fonder Star O'Caster</option>
-    <option>Wash and Burn N3</option>
+    <option value="1">Grigson Les Pool</option>
+    <option value="2">Fonder Star O'Caster</option>
+    <option value="3">Wash and Burn N3</option>
 </select>
+
+<script src="barq.min.js"></script>
 
 <script>
     var select = document.querySelector('#guitars');
@@ -52,15 +54,45 @@ If used properly, barq can enhance the user experience and save you dozens of HT
         useFirstOptionTextAsPlaceholder: false,
         placeholderText: 'Select teh guitar',
         noResultsMessage: 'No guitars for you, bro :(',
-        onchange: function(e) {
-            alert('You selected ' + e.text);
+        onchange: function() {
+            alert('You selected ' + this.text);
         }
     }).init();
 </script>
 
+```
+
+## Load data from JSON
+```html
+<select id="guitars">
+    <option>Select a guitar model</option>
+</select>
+
 <script src="barq.min.js"></script>
 
+<script>
+    var select = document.querySelector('#guitars');
+
+    var data = {
+        "guitars": [{
+                "text": "Grigson Les Pool",
+                "value": 1
+            }, {
+                "text": "Fonder Star O'Caster",
+                "value": 2
+            }, {
+                "text": "Wash and Burn N3",
+                "value": 3
+            }
+        ]};
+
+    var barq = new Barq(select, {
+        dataSource: data.guitars
+    }).init();
+</script>
+
 ```
+
 
 ## Contributing
 
