@@ -24,8 +24,43 @@ If used properly, barq can enhance the user experience and save you dozens of HT
  - **Well supported:** works in IE9+ and all modern browsers, including mobile.
 
 ## Basic usage
+```html
+<select data-barq>
+    <option>Select a guitar model</option>
+    <option>Grigson Les Pool</option>
+    <option>Fonder Star O'Caster</option>
+    <option>Wash and Burn N3</option>
+</select>
+
+<script src="barq.min.js"></script>
+```
 
 ## Advanced usage
+```html
+<select id="guitars">
+    <option>Grigson Les Pool</option>
+    <option>Fonder Star O'Caster</option>
+    <option>Wash and Burn N3</option>
+</select>
+
+<script>
+    var select = document.querySelector('#guitars');
+
+    var barq = new Barq(select, {
+        enablePagination: false,
+        removeFirstOptionFromSearch: false,
+        useFirstOptionTextAsPlaceholder: false,
+        placeholderText: 'Select teh guitar',
+        noResultsMessage: 'No guitars for you, bro :(',
+        onchange: function(e) {
+            alert('You selected ' + e.text);
+        }
+    }).init();
+</script>
+
+<script src="barq.min.js"></script>
+
+```
 
 ## Contributing
 
