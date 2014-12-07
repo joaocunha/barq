@@ -25,7 +25,7 @@ If used properly, barq can enhance the user experience and save you dozens of HT
 
 ## Lazy instance
 ```html
-<!-- The data-barq attribute does the trick -->
+<!-- The data-barq attribute triggers the instantiation -->
 <select data-barq>
     <option>Select a guitar model</option>
     <option value="1">Grigson Les Pool</option>
@@ -33,12 +33,15 @@ If used properly, barq can enhance the user experience and save you dozens of HT
     <option value="3">Wash and Burn N3</option>
 </select>
 
+<!-- No additional JS needed - just load the lib and you're set -->
 <script src="barq.min.js"></script>
 ```
 
 ## Manual instance + parameters
 ```html
+<!-- No need for data-barq -->
 <select id="guitars">
+    <!-- We are gonna provide a placeholder with the options -->
     <option value="1">Grigson Les Pool</option>
     <option value="2">Fonder Star O'Caster</option>
     <option value="3">Wash and Burn N3</option>
@@ -54,9 +57,9 @@ If used properly, barq can enhance the user experience and save you dozens of HT
         removeFirstOptionFromSearch: false,
         useFirstOptionTextAsPlaceholder: false,
         placeholderText: 'Select teh guitar',
-        noResultsMessage: 'No guitars for you, bro :(',
+        noResultsMessage: 'No guitars for you, pal :(',
         onchange: function() {
-            alert('You selected ' + this.text);
+            alert('You selected the ' + this.text + ' model.');
         }
     }).init();
 </script>
@@ -65,7 +68,7 @@ If used properly, barq can enhance the user experience and save you dozens of HT
 
 ## Load data from JSON
 ```html
-<!-- Skeleton -->
+<!-- Base skeleton (can also be created with JS) -->
 <select id="guitars">
     <option>Select a guitar model</option>
 </select>
