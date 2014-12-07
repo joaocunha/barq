@@ -25,6 +25,7 @@ If used properly, barq can enhance the user experience and save you dozens of HT
 
 ## Lazy instance
 ```html
+<!-- The data-barq attribute does the trick -->
 <select data-barq>
     <option>Select a guitar model</option>
     <option value="1">Grigson Les Pool</option>
@@ -64,6 +65,7 @@ If used properly, barq can enhance the user experience and save you dozens of HT
 
 ## Load data from JSON
 ```html
+<!-- Skeleton -->
 <select id="guitars">
     <option>Select a guitar model</option>
 </select>
@@ -75,16 +77,16 @@ If used properly, barq can enhance the user experience and save you dozens of HT
 
     var data = {
         "guitars": [{
-                "text": "Grigson Les Pool",
-                "value": 1
-            }, {
-                "text": "Fonder Star O'Caster",
-                "value": 2
-            }, {
-                "text": "Wash and Burn N3",
-                "value": 3
-            }
-        ]};
+            "text": "Grigson Les Pool",
+            "value": 1
+        }, {
+            "text": "Fonder Star O'Caster",
+            "value": 2
+        }, {
+            "text": "Wash and Burn N3",
+            "value": 3
+        }
+    ]};
 
     var barq = new Barq(select, {
         dataSource: data.guitars
