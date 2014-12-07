@@ -145,6 +145,11 @@
             CMD: 91
         };
 
+        var ERROR_MESSAGES = {
+            E_OPTION_NOT_FOUND: 'No <option> elements found to be used as a placeholder.',
+            E_BASE_FIELD_NOT_FOUND: 'Missing <select> element on instantiation.'
+        };
+
         /**
          *  currentPage
          *  @type {Integer}
@@ -207,6 +212,12 @@
          * @returns {Object} An instance of Barq itself, containing all public methods & properties.
          */
         barq.init = function() {
+            try {
+                (baseField.tagName.toUpperCase() === 'SELECT');
+            } catch(e) {
+                throw new BarqException(ERROR_MESSAGES.E_BASE_FIELD_NOT_FOUND);
+            }
+
             // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
             // We don't remove the base element as it holds the `name` attribute and values,
             // so it's useful in case of form submission.
@@ -295,6 +306,20 @@
         };
 
         /**
+         * @function BarqException
+         * Basic exception handler.
+         *
+         * @param {String} message Error message to be displayed.
+         */
+        var BarqException = function(message) {
+            this.message = message;
+            this.name = 'BarqException';
+        };
+
+        // Extends the Error type
+        BarqException.prototype = new Error();
+
+        /**
          * @function extractDataFromBaseField
          * Grabs all the <option> elements and replaces them by <li> elements,
          * building a string containing all <li> items.
@@ -304,7 +329,11 @@
         var extractDataFromBaseField = function() {
             // Removes the first option if required (DOM is faster than regex in this case)
             if (barq.options.removeFirstOptionFromSearch) {
-                barq.baseField.removeChild(barq.baseField.options[0]);
+                try {
+                    barq.baseField.removeChild(barq.baseField.options[0]);
+                } catch(e) {
+                    throw new BarqException(ERROR_MESSAGES.E_OPTION_NOT_FOUND);
+                }
             }
 
             // Transforms all the <option> elements in <li> elements.
