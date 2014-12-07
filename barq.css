@@ -1,51 +1,56 @@
-* {
+/* TODO: convert the units to REM */
+
+.barq-text-input, .barq-list {
   box-sizing: border-box;
+  font-family: arial, sans-serif;
+  font-size: 14px;
 }
 
-input, select {
+.barq-text-input {
   border: 1px solid black;
   display: inline-block;
-  width: 400px;
+  min-width: 300px;
+  padding: 8px;
 }
 
 .barq-list {
   list-style-type: none;
   margin: 0;
   padding: 0;
-  display: none;
-  direction: ltr;
   border: 1px solid #a8a8a8;
-  border-top: none;
-  overflow: auto;
-  max-height: 15.5em;
-  position: absolute;
-  z-index: 90;
+  max-height: 210px;
   background-color: white;
+
+  /* Avoid double borders with the input */
+  border-top: none;
+
+  /* Top and Left coords are controled by JS */
+  position: absolute;
+
+  /* Allow for scrolling and paginating */
+  overflow: auto;
+
+  /* TODO: add support for RTL */
+  direction: ltr;
+
+  /* Initially invisible, JS shows it */
+  display: none;
+
+  /* You might want to keep track of your z-indexes */
+  z-index: 666;
 }
 
 .barq-list li {
-  padding: 0.75em;
+  cursor: pointer;
   font-size: 14px;
-}
-
-.barq-list li.selected {
-  font-weight: 700;
-  background-color: #999999;
-  color: white;
+  padding: 8px;
 }
 
 .barq-list li:hover {
-  cursor: pointer;
-  background-color: #c5cbcc;
-}
-
-.barq-visible-list {
-  border-color: #a8a8a8;
-  border-bottom: 1px solid transparent;
+  background-color: #D1D1D1;
 }
 
 .barq-match {
-  color: #2c2e2f;
   font-weight: bold;
   font-style: normal;
 }
@@ -59,5 +64,6 @@ input, select {
 }
 
 .barq-active-item {
-  background-color: red;
+  background-color: #44575B;
+  color: #fff;
 }
