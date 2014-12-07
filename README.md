@@ -85,8 +85,8 @@ If used properly, barq can enhance the user experience and save you dozens of HT
         }, {
             "text": "Wash and Burn N3",
             "value": 3
-        }
-    ]};
+        }]
+    };
 
     var barq = new Barq(select, {
         dataSource: data.guitars
