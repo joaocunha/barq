@@ -77,6 +77,14 @@
             noResultsMessage: opts.noResultsMessage || 'No results found.',
 
             /**
+             * dataSource
+             * @type {Array}
+             *
+             * An array of objects to populate the list.
+             */
+             dataSource: opts.dataSource || null,
+
+            /**
              * onload
              * @type {Function}
              *
@@ -145,6 +153,12 @@
             CMD: 91
         };
 
+        var ERROR_MESSAGES = {
+            E_OPTION_NOT_FOUND: 'No <option> elements found.',
+            E_BASE_FIELD_NOT_FOUND: 'Missing <select> element on instantiation.',
+            E_INVALID_DATA_SOURCE: 'Invalid data source. Expected an array of objects, JSON style.'
+        };
+
         /**
          *  currentPage
          *  @type {Integer}
@@ -207,6 +221,13 @@
          * @returns {Object} An instance of Barq itself, containing all public methods & properties.
          */
         barq.init = function() {
+            // Check for the existance of the base field
+            try {
+                (baseField.tagName.toUpperCase() === 'SELECT');
+            } catch(e) {
+                throw new BarqException(ERROR_MESSAGES.E_BASE_FIELD_NOT_FOUND);
+            }
+
             // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
             // We don't remove the base element as it holds the `name` attribute and values,
             // so it's useful in case of form submission.
@@ -218,8 +239,12 @@
             // Creates the empty <ul> element to hold the list items
             barq.list = createEmptyList();
 
-            // Extracts the items from the base field and stores them in memory as a string representation
-            barq.items = extractDataFromBaseField();
+            // Extracts the items from the base field/JSON and stores them in memory as a string representation
+            if (barq.options.dataSource) {
+                barq.items = createItemsFromJSON();
+            } else {
+                barq.items = createItemsFromBaseField();
+            }
 
             // Fills the list element with the items
             replaceListData(barq.items);
@@ -267,8 +292,12 @@
                 input.setAttribute('placeholder', barq.options.placeholderText);
             } else if (barq.options.useFirstOptionTextAsPlaceholder) {
                 // If null (default), use the first <option> text from the baseField
-                var firstOptionText = utils.getTextNode(barq.baseField.options[0]);
-                input.setAttribute('placeholder', firstOptionText);
+                try {
+                    var firstOptionText = utils.getTextNode(barq.baseField.options[0]);
+                    input.setAttribute('placeholder', firstOptionText);
+                } catch(e) {
+                    throw new BarqException(ERROR_MESSAGES.E_OPTION_NOT_FOUND);
+                }
             }
 
             // Insert the input field right after the base select element
@@ -295,31 +324,76 @@
         };
 
         /**
-         * @function extractDataFromBaseField
-         * Grabs all the <option> elements and replaces them by <li> elements,
-         * building a string containing all <li> items.
+         * @function BarqException
+         * Basic exception handler.
+         *
+         * @param {String} message Error message to be displayed.
+         */
+        var BarqException = function(message) {
+            this.message = message;
+            this.name = 'BarqException';
+        };
+
+        // Extends the Error type
+        BarqException.prototype = new Error();
+
+        /**
+         * @function createItemsFromBaseField
+         * Extracts all the <option> elements from the baseField and replaces them
+         * by <li> elements, building a string containing all <li> items.
          *
          * @returns {String} A list of <li> items stored in one long string
          */
-        var extractDataFromBaseField = function() {
-            // Removes the first option if required (DOM is faster than regex in this case)
+        var createItemsFromBaseField = function() {
+            // Removes the first option if needed (DOM is faster than regex in this case)
             if (barq.options.removeFirstOptionFromSearch) {
-                barq.baseField.removeChild(barq.baseField.options[0]);
+                try {
+                    barq.baseField.removeChild(barq.baseField.options[0]);
+                } catch(e) {
+                    throw new BarqException(ERROR_MESSAGES.E_OPTION_NOT_FOUND);
+                }
             }
 
             // Transforms all the <option> elements in <li> elements.
             // The data-value attribute carries the original <option> value.
-            var htmlString = barq.baseField.innerHTML;
+            var items = barq.baseField.innerHTML;
             var regex = /<option(?:[^>]*?value="([^"]*?)"|)[^>]*?>(.*?)<\/option>\n?/gi;
             var li = '<li data-value="$1">$2</li>';
-            htmlString = htmlString.replace(regex, li);
+            items = items.replace(regex, li);
 
             // Clean up comments and whitespace
-            htmlString = htmlString.replace(/<!--([^\[|(<!)].*)/g, '')
+            items = items.replace(/<!--([^\[|(<!)].*)/g, '')
                                    .replace(/\s{2,}/g, '')
                                    .replace(/(\r?\n)/g, '');
 
-            return htmlString;
+            return items;
+        };
+
+        /**
+         * @function createItemsFromJSON
+         * Iterates through the JSON and builds a string containing all <li> items.
+         *
+         * @returns {String} A list of <li> items stored in one long string
+         */
+        var createItemsFromJSON = function() {
+            // Simple alias
+            var ds = barq.options.dataSource;
+
+            // Checks for the validity of data source
+            try {
+                (ds instanceof Array);
+            } catch(e) {
+                throw new BarqException(ERROR_MESSAGES.E_INVALID_DATA_SOURCE);
+            }
+
+            // Builds a list of concatenated <li> elements
+            var items = '';
+
+            for (var i = 0; i < ds.length; i++) {
+                items += '<li data-value="' + ds[i].value + '">' + ds[i].text + '</li>';
+            }
+
+            return items;
         };
 
         /**
