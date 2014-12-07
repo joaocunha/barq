@@ -153,10 +153,17 @@
             CMD: 91
         };
 
+        /**
+         * ERROR_MESSAGES
+         * @type {Object}
+         *
+         * List of error messages for custom exception handling.
+         */
         var ERROR_MESSAGES = {
             E_OPTION_NOT_FOUND: 'No <option> elements found.',
             E_BASE_FIELD_NOT_FOUND: 'Missing <select> element on instantiation.',
-            E_INVALID_DATA_SOURCE: 'Invalid data source. Expected an array of objects, JSON style.'
+            E_INVALID_DATA_SOURCE: 'Invalid data source. Expected an array of objects, JSON style.',
+            E_ALREADY_INSTANTIATED: 'Instance already exists.'
         };
 
         /**
@@ -226,6 +233,13 @@
                 (baseField.tagName.toUpperCase() === 'SELECT');
             } catch(e) {
                 throw new BarqException(ERROR_MESSAGES.E_BASE_FIELD_NOT_FOUND);
+            }
+
+            // Prevents doubling the instance in case it's supposed to be lazy loaded
+            if (!baseField.getAttribute('data-barq-instantiated')) {
+                baseField.setAttribute('data-barq-instantiated', 'true');
+            } else {
+                throw new BarqException(ERROR_MESSAGES.E_ALREADY_INSTANTIATED);
             }
 
             // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
@@ -863,7 +877,7 @@
     ;(function() {
         var lazyLoadBaseFields = doc.querySelectorAll('[data-barq]');
 
-        // Todd Motto goes spartan against [].forEach.call() and I quite agree with his points,
+        // Todd Motto goes berserker against [].forEach.call() and I quite agree with his points,
         // but as a one-way loop that's used only once and needs no manipulation, this does the
         // trick quite well - http://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
         [].forEach.call(lazyLoadBaseFields, function(baseField) {
