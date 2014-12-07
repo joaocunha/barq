@@ -255,13 +255,16 @@
 
             // Extracts the items from the base field/JSON and stores them in memory as a string representation
             if (barq.options.dataSource) {
-                barq.items = createItemsFromJSON();
+                barq.itemsHTML = createItemsFromJSON();
             } else {
-                barq.items = createItemsFromBaseField();
+                barq.itemsHTML = createItemsFromBaseField();
             }
 
             // Fills the list element with the items
-            replaceListData(barq.items);
+            replaceListData(barq.itemsHTML);
+
+            // DOM representation of the items, useful for programatic selection
+            barq.items = barq.list.childNodes;
 
             // Attaches all the event handlers
             setupEvents();
@@ -583,7 +586,7 @@
                 matchingRegex = new RegExp('<li[^>]*>[^<]*' + query + '[^<]*<\/li>', 'gi');
             }
 
-            return barq.items.match(matchingRegex) || [];
+            return barq.itemsHTML.match(matchingRegex) || [];
         };
 
         /**
