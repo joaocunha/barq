@@ -32,7 +32,7 @@
              *
              * Fetches the matches with a limit. Specially useful for large resultsets.
              */
-            enablePagination: opts.enablePagination || false,
+            enablePagination: opts.enablePagination || true,
 
             /**
              * resultsPerPage
