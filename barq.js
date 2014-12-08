@@ -418,11 +418,11 @@
          * Shows the list element.
          */
         barq.showList = function() {
-            // Makes sure to position the list properly everytime it is shown
-            barq.repositionList();
-
             // Shows the list
             utils.addClass(barq.list, classNames.visible);
+
+            // Makes sure to position the list properly everytime it is shown
+            barq.repositionList();
 
             // Adds a vanity class to the input
             utils.addClass(barq.textInput, classNames.textInputWithList);
@@ -524,8 +524,24 @@
          * A good alternative would be tether.js but it weights ~5kb (more than Barq itself) :(
          */
         barq.repositionList = function() {
-            var topPosition = Math.floor((barq.textInput.offsetTop + parseInt(barq.textInput.offsetHeight, 10)));
+            var aboveInputOffset = barq.textInput.offsetTop;
 
+            var belowInputOffset = Math.floor((barq.textInput.offsetTop + parseInt(barq.textInput.offsetHeight, 10)));
+
+            var viewportHeight = win.innerHeight || doc.documentElement.clientHeight;
+
+            var topPosition = 0;
+
+            // Check if the list would be cut by the viewport
+            if ((belowInputOffset + barq.list.offsetHeight) > viewportHeight) {
+                // Show above
+                topPosition = aboveInputOffset - barq.list.offsetHeight;
+            } else {
+                // Show below
+                topPosition = belowInputOffset;
+            }
+
+            // Reposition the list accordingly
             barq.list.style.top = topPosition + 'px';
             barq.list.style.left = barq.textInput.offsetLeft + 'px';
             barq.list.style.width = barq.textInput.offsetWidth + 'px';
