@@ -563,6 +563,9 @@
                 if (offset >= 0) {
                     matches = matches.splice(offset, limit);
                 }
+            } else {
+                // Always start from the top of the list if we don't have pagination
+                offset = 0;
             }
 
             if (matches.length) {
@@ -855,11 +858,13 @@
 
             // Pagination is triggered onScroll
             utils.addEventListener(barq.list, 'scroll', function() {
-                var offset = barq.paginate();
+                if (barq.options.enablePagination) {
+                    var offset = barq.paginate();
 
-                if (offset >= 0) {
-                    // Fetch the results
-                    barq.search(barq.textInput.value, offset);
+                    if (offset >= 0) {
+                        // Fetch the results
+                        barq.search(barq.textInput.value, offset);
+                    }
                 }
             });
 
