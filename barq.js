@@ -362,6 +362,7 @@
          * @returns {String} A list of <li> items stored in one long string
          */
         var createItemsFromBaseField = function() {
+
             // Removes the first option if needed (DOM is faster than regex in this case)
             if (barq.options.removeFirstOptionFromSearch) {
                 try {
@@ -371,17 +372,17 @@
                 }
             }
 
+            // Clean up comments and whitespace
+            // TODO: mix these regexes if possible
+            var items = barq.baseField.innerHTML.replace(/<!--([^\[|(<!)].*)/g, '')
+                                                    .replace(/\s{2,}/g, '')
+                                                    .replace(/(\r?\n)/g, '');
+
             // Transforms all the <option> elements in <li> elements.
             // The data-value attribute carries the original <option> value.
-            var items = barq.baseField.innerHTML;
             var regex = /<option(?:[^>]*?value="([^"]*?)"|)[^>]*?>(.*?)<\/option>\n?/gi;
             var li = '<li data-value="$1">$2</li>';
             items = items.replace(regex, li);
-
-            // Clean up comments and whitespace
-            items = items.replace(/<!--([^\[|(<!)].*)/g, '')
-                                   .replace(/\s{2,}/g, '')
-                                   .replace(/(\r?\n)/g, '');
 
             return items;
         };
