@@ -82,7 +82,7 @@
              *
              * An array of objects to populate the list.
              */
-             dataSource: opts.dataSource || null,
+            dataSource: opts.dataSource || null,
 
             /**
              * onload
