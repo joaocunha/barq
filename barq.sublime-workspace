@@ -316,13 +316,10 @@
 	"buffers":
 	[
 		{
-			"contents": "/*!\n *\n * @license MIT\n * @preserve\n * Barq: client-side autocomplete https://github.com/joaocunha/barq/\n * @author João Cunha - joao@joaocunha.net - twitter.com/@joaocunha\n * Thanks to all contributors, specially @bhappyz, @ghostavio, @kumailht and\n */\n\n;(function(win, doc, undefined) {\n    'use strict';\n\n    // We declare the plugin as a globally accessible variable, so we\n    // can instantiate outside the anonymous self-invoking function\n    win.Barq = function(baseField, options) {\n        // Just an alias for easier readability (and to preserve `this` context)\n        var barq = this;\n\n        // For extending the options in case the user passes the parameter\n        var opts = options || {};\n\n        // Stores the base field on the instance\n        barq.baseField = baseField;\n\n        barq.options = {\n            /**\n             * enablePagination\n             * @type {Boolean}\n             *\n             * Fetches the matches with a limit. Specially useful for large resultsets.\n             */\n            enablePagination: opts.enablePagination || true,\n\n            /**\n             * resultsPerPage\n             * @type {Integer}\n             *\n             * Number of list items to fetch per page.\n             */\n            resultsPerPage: opts.resultsPerPage || 50,\n\n            /**\n             * removeFirstOptionFromSearch\n             * @type {Boolean}\n             *\n             * If true, removes the first option element from the search. Useful when\n             * it's something like \"<option>Select a value</option>\"\n             */\n            removeFirstOptionFromSearch: opts.removeFirstOptionFromSearch || true,\n\n            /**\n             * useFirstOptionTextAsPlaceholder\n             * @type {Boolean}\n             *\n             * If true, uses the first option as a placeholder for the autocomplete.\n             */\n            useFirstOptionTextAsPlaceholder: opts.useFirstOptionTextAsPlaceholder || true,\n\n            /**\n             * placeholderText\n             * @type {null|String}\n             *\n             * Allows to set an arbitrary placeholder value, overriding first\n             * option's text which is the default.\n             */\n            placeholderText: opts.placeholderText || null,\n\n            /**\n             * noResultsMessage\n             * @type {String}\n             *\n             * Message to show when no matches are found on the search.\n             */\n            noResultsMessage: opts.noResultsMessage || 'No results found.',\n\n            /**\n             * dataSource\n             * @type {Array}\n             *\n             * An array of objects to populate the list.\n             */\n             dataSource: opts.dataSource || null,\n\n            /**\n             * onload\n             * @type {Function}\n             *\n             * Callback called after instantiation, once.\n             */\n            onload: opts.onload || function() {},\n\n            /**\n             * onchange\n             * @type {Function}\n             *\n             * Callback called everytime an item is selected from the list.\n             */\n            onchange: opts.onchange || function() {}\n        };\n\n        /**\n         * classNames\n         * @type {Object}\n         *\n         * Holds all the class selectors\n         */\n        var classNames = {\n            // The <ul> element that holds all search results\n            dropdownList: 'barq-list',\n\n            // The text input to perform the searches on\n            textInput: 'barq-text-input',\n\n            // Vanity class to style the input when the list is currently being displayed\n            textInputWithList: 'barq-input-text-expanded',\n\n            // Utility class for hiding the list\n            hidden: 'barq-hidden',\n\n            // Utility class for showing the list\n            visible: 'barq-visible',\n\n            // Used for keyboard navigation\n            activeItem: 'barq-active-item',\n\n            // The item that shows no results\n            noResults: 'barq-no-results',\n\n            // Emphasizes a match on a search (like 'Heat<em class=\"barq-match\">hro</em>w Airport')\n            match: 'barq-match'\n        };\n\n        /**\n         * KEYCODES\n         * @type {Object}\n         *\n         * List of the navigation key codes we're interested at filtering.\n         */\n        var KEYCODES = {\n            TAB: 9,\n            ENTER: 13,\n            SHIFT: 16,\n            ESC: 27,\n            END: 35,\n            HOME: 36,\n            LEFT: 37,\n            UP: 38,\n            RIGHT: 39,\n            DOWN: 40,\n            CMD: 91\n        };\n\n        /**\n         * ERROR_MESSAGES\n         * @type {Object}\n         *\n         * List of error messages for custom exception handling.\n         */\n        var ERROR_MESSAGES = {\n            E_OPTION_NOT_FOUND: 'No <option> elements found.',\n            E_BASE_FIELD_NOT_FOUND: 'Missing <select> element on instantiation.',\n            E_INVALID_DATA_SOURCE: 'Invalid data source. Expected an array of objects, JSON style.',\n            E_ALREADY_INSTANTIATED: 'Instance already exists.'\n        };\n\n        /**\n         *  currentPage\n         *  @type {Integer}\n         *\n         *  Pagination counter\n         */\n        var currentPage = 0;\n\n        // A few tiny crossbrowser DOM utilities so we can drop jQuery\n        var utils = {\n            addEventListener: function(el, eventName, handler) {\n                if (el.addEventListener) {\n                    el.addEventListener(eventName, handler);\n                } else {\n                    el.attachEvent('on' + eventName, handler);\n                }\n            },\n\n            addClass: function(el, className) {\n                if (el.classList) {\n                    el.classList.add(className);\n                } else {\n                    el.className += ' ' + className;\n                }\n            },\n\n            removeClass: function(el, className) {\n                if (el.classList) {\n                    el.classList.remove(className);\n                } else {\n                    var regex = new RegExp('(^|\\\\b)' + className.split(' ').join('|') + '(\\\\b|$)', 'gi');\n                    el.className = el.className.replace(regex, ' ');\n                }\n            },\n\n            getTextNode: function(node) {\n                return (node && (node.innerText || node.textContent || node.innerHTML));\n            },\n\n            isElementOnViewport: function(el) {\n                var rect = el.getBoundingClientRect();\n\n                return (\n                    rect.top >= 0 &&\n                    rect.left >= 0 &&\n                    rect.bottom <= (win.innerHeight || doc.documentElement.clientHeight) &&\n                    rect.right <= (win.innerWidth || doc.documentElement.clientWidth)\n                );\n            },\n\n            escapeString: function(text) {\n                return text.replace(/[-[\\]{}()*+?.,\\\\^$|#\\s]/g, '\\\\$&');\n            }\n        };\n\n        /**\n         * @function init\n         * Just a wrapper for initialization.\n         *\n         * @returns {Object} An instance of Barq itself, containing all public methods & properties.\n         */\n        barq.init = function() {\n            // Check for the existance of the base field\n            try {\n                (baseField.tagName.toUpperCase() === 'SELECT');\n            } catch(e) {\n                throw new BarqException(ERROR_MESSAGES.E_BASE_FIELD_NOT_FOUND);\n            }\n\n            // Prevents doubling the instance in case it's supposed to be lazy loaded\n            if (!baseField.getAttribute('data-barq-instantiated')) {\n                baseField.setAttribute('data-barq-instantiated', 'true');\n            } else {\n                throw new BarqException(ERROR_MESSAGES.E_ALREADY_INSTANTIATED);\n            }\n\n            // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.\n            // We don't remove the base element as it holds the `name` attribute and values,\n            // so it's useful in case of form submission.\n            utils.addClass(barq.baseField, classNames.hidden);\n\n            // Creates the main text input that's gonna be used as an autocomplete\n            barq.textInput = createTextInput();\n\n            // Creates the empty <ul> element to hold the list items\n            barq.list = createEmptyList();\n\n            // Extracts the items from the base field/JSON and stores them in memory as a string representation\n            if (barq.options.dataSource) {\n                barq.itemsHTML = createItemsFromJSON();\n            } else {\n                barq.itemsHTML = createItemsFromBaseField();\n            }\n\n            // Fills the list element with the items\n            replaceListData(barq.itemsHTML);\n\n            // DOM representation of the items, useful for programatic selection\n            barq.items = barq.list.childNodes;\n\n            // Attaches all the event handlers\n            setupEvents();\n\n            // Sets an initial selection if there's a preselected value or option\n            initialSelection();\n\n            // onload user callback, passing barq as `this`\n            barq.options.onload.call(barq);\n\n            // Returns an instance of itself, so we can access from outside\n            return barq;\n        };\n\n        /**\n         * @function createTextInput\n         * Creates the auto complete text input that replaces the original select element.\n         *\n         * @returns {HTMLInputElement} The newly-created text input\n         */\n        var createTextInput = function() {\n            var input = doc.createElement('input');\n\n            // Only one class ATM, no need for fancy pants .addClass()\n            input.setAttribute('class', classNames.textInput);\n\n            // Prevents some HTML5 trickery to mess with our stuff\n            input.setAttribute('autocapitalize', 'off');\n            input.setAttribute('autocomplete', 'off');\n            input.setAttribute('autocorrect', 'off');\n            input.setAttribute('spellcheck', 'false');\n\n            // Replicates the tabindex from the basefield...\n            input.setAttribute('tabindex', barq.baseField.tabIndex);\n\n            // ...and removes it from the basefield\n            // See: http://stackoverflow.com/a/5192919/1411163\n            barq.baseField.setAttribute('tabindex', '-1');\n\n            // Checks for arbitrary text for the placeholder\n            if (barq.options.placeholderText) {\n                input.setAttribute('placeholder', barq.options.placeholderText);\n            } else if (barq.options.useFirstOptionTextAsPlaceholder) {\n                // If null (default), use the first <option> text from the baseField\n                try {\n                    var firstOptionText = utils.getTextNode(barq.baseField.options[0]);\n                    input.setAttribute('placeholder', firstOptionText);\n                } catch(e) {\n                    throw new BarqException(ERROR_MESSAGES.E_OPTION_NOT_FOUND);\n                }\n            }\n\n            // Insert the input field right after the base select element\n            barq.baseField.insertAdjacentHTML('afterend', input.outerHTML);\n\n            // We grab it back from the DOM, as insertAdjecentHTML doesn't return the inserted element\n            return barq.baseField.nextElementSibling;\n        };\n\n        /**\n         * @function initialSelection\n         * Extends the \"selected\" property behavior to the autocomplete text input.\n         *\n         * @returns {HTMLOptionElement|Null} The pre-selected <option> element, or null\n         */\n        var initialSelection = function() {\n            var option = barq.baseField.querySelector('[selected]');\n\n            if (option) {\n                barq.selectItem(option);\n            }\n\n            return option;\n        };\n\n        /**\n         * @function BarqException\n         * Basic exception handler.\n         *\n         * @param {String} message Error message to be displayed.\n         */\n        var BarqException = function(message) {\n            this.message = message;\n            this.name = 'BarqException';\n        };\n\n        // Extends the Error type\n        BarqException.prototype = new Error();\n\n        /**\n         * @function createItemsFromBaseField\n         * Extracts all the <option> elements from the baseField and replaces them\n         * by <li> elements, building a string containing all <li> items.\n         *\n         * @returns {String} A list of <li> items stored in one long string\n         */\n        var createItemsFromBaseField = function() {\n\n            // Removes the first option if needed (DOM is faster than regex in this case)\n            if (barq.options.removeFirstOptionFromSearch) {\n                try {\n                    barq.baseField.removeChild(barq.baseField.options[0]);\n                } catch(e) {\n                    throw new BarqException(ERROR_MESSAGES.E_OPTION_NOT_FOUND);\n                }\n            }\n\n            // Clean up comments and whitespace\n            // TODO: mix these regexes if possible\n            var items = barq.baseField.innerHTML.replace(/<!--([^\\[|(<!)].*)/g, '')\n                                                    .replace(/\\s{2,}/g, '')\n                                                    .replace(/(\\r?\\n)/g, '');\n\n            // Transforms all the <option> elements in <li> elements.\n            // The data-value attribute carries the original <option> value.\n            var regex = /<option(?:[^>]*?value=\"([^\"]*?)\"|)[^>]*?>(.*?)<\\/option>\\n?/gi;\n            var li = '<li data-value=\"$1\">$2</li>';\n            items = items.replace(regex, li);\n\n            return items;\n        };\n\n        /**\n         * @function createItemsFromJSON\n         * Iterates through the JSON and builds a string containing all <li> items.\n         *\n         * @returns {String} A list of <li> items stored in one long string\n         */\n        var createItemsFromJSON = function() {\n            // Simple alias\n            var ds = barq.options.dataSource;\n\n            // Checks for the validity of data source\n            try {\n                (ds instanceof Array);\n            } catch(e) {\n                throw new BarqException(ERROR_MESSAGES.E_INVALID_DATA_SOURCE);\n            }\n\n            // Builds a list of concatenated <li> elements\n            var items = '';\n\n            for (var i = 0; i < ds.length; i++) {\n                items += '<li data-value=\"' + ds[i].value + '\">' + ds[i].text + '</li>';\n            }\n\n            return items;\n        };\n\n        /**\n         * @function showList\n         * Shows the list element.\n         */\n        barq.showList = function() {\n            // Shows the list\n            utils.addClass(barq.list, classNames.visible);\n\n            // Makes sure to position the list properly everytime it is shown\n            barq.repositionList();\n\n            // Adds a vanity class to the input\n            utils.addClass(barq.textInput, classNames.textInputWithList);\n\n            // Sets the first item as active, so we can start our navigation from there\n            if (barq.list.firstChild.className !== classNames.noResults) {\n                utils.addClass(barq.list.firstChild, classNames.activeItem);\n            }\n        };\n\n        /**\n         * @function hideList\n         * Hides the list element.\n         */\n        barq.hideList = function() {\n            // Hides the list\n            utils.removeClass(barq.list, classNames.visible);\n\n            // Removes the vanity class from the text input\n            utils.removeClass(barq.textInput, classNames.textInputWithList);\n        };\n\n        /**\n         * @function selectItem\n         * Performs a list item selection (based on click or enter key, for example).\n         *\n         * @param {HTMLLIElement} item The item to base the scrolling on.\n         */\n        barq.selectItem = function(item) {\n            var selectedText = utils.getTextNode(item);\n\n            // Sets the selected item's text on the input\n            barq.textInput.value = selectedText;\n\n            // Stores the text on barq itself\n            barq.text = selectedText;\n\n            // Hides the list as we don't need it anymore\n            barq.hideList();\n\n            // Works for both <li> items and <option> items\n            var val = item.getAttribute('data-value') ? item.getAttribute('data-value') : item.value;\n\n            // Set the value back on the baseField\n            barq.baseField.value = val;\n\n            // Store the value on Barq itself\n            barq.value = val;\n\n            // onchange user callback\n            barq.options.onchange.call(barq);\n        };\n\n        /**\n         * @function createEmptyList\n         * Creates an empty <ul> element and inserts it after the autocomplete input.\n         *\n         * @returns {HTMLUListElement} The <ul> element.\n         */\n        var createEmptyList = function() {\n            var list = doc.createElement('ul');\n\n            list.setAttribute('class', classNames.dropdownList);\n\n            // Insert the list right after the autocomplete input\n            barq.textInput.insertAdjacentHTML('afterend', list.outerHTML);\n\n            // We grab it back from the DOM, as insertAdjecentHTML doesn't return the inserted element\n            return barq.textInput.nextElementSibling;\n        };\n\n        /**\n         * @function replaceListData\n         * Replaces the items on a list\n         *\n         * @param {String} data A string containing the <li> items that will replace the current ones.\n         */\n        var replaceListData = function(data) {\n            barq.list.innerHTML = data;\n\n            barq.currentItemsDOM = barq.list.childNodes;\n        };\n\n        /**\n         * @function insertDataOnList\n         * Appends data to the end of the list\n         *\n         * @param {String} data A string containing the <li> items to be appended to the list.\n         */\n        var insertDataOnList = function(data) {\n            barq.list.innerHTML += data;\n\n            barq.currentItemsDOM = barq.list.childNodes;\n        };\n\n        /**\n         * @function repositionList\n         * Repositions and resizes the list when viewport size changes.\n         * A good alternative would be tether.js but it weights ~5kb (more than Barq itself) :(\n         */\n        barq.repositionList = function() {\n            var aboveInputOffset = barq.textInput.offsetTop;\n\n            var belowInputOffset = Math.floor((barq.textInput.offsetTop + parseInt(barq.textInput.offsetHeight, 10)));\n\n            var viewportHeight = win.innerHeight || doc.documentElement.clientHeight;\n\n            var topPosition = 0;\n\n            // Check if the list would be cut by the viewport\n            if ((belowInputOffset + barq.list.offsetHeight) > viewportHeight) {\n                // Show above\n                topPosition = aboveInputOffset - barq.list.offsetHeight;\n            } else {\n                // Show below\n                topPosition = belowInputOffset;\n            }\n\n            // Reposition the list accordingly\n            barq.list.style.top = topPosition + 'px';\n            barq.list.style.left = barq.textInput.offsetLeft + 'px';\n            barq.list.style.width = barq.textInput.offsetWidth + 'px';\n        };\n\n        // We search on the items list (string) with `match`, which returns an array of matches.\n        // We `splice` this array to return only a chunk of results, based\n        // on the pagination. We then `join` that chunk, converting it back to a string,\n        // and perform a `replace` to add highlighting.\n        barq.search = function(query, offset) {\n            // An array of matches\n            var matches = filterList(query);\n\n            if (barq.options.enablePagination) {\n                offset = offset || 0;\n                var limit = barq.options.resultsPerPage;\n\n                // Gets only a chunk of the results\n                if (offset >= 0) {\n                    matches = matches.splice(offset, limit);\n                }\n            } else {\n                // Always start from the top of the list if we don't have pagination\n                offset = 0;\n            }\n\n            if (matches.length) {\n                // Stores a DOM representation of the items every time a search is performed\n                matches = matches.join('');\n            }\n\n            if (query && matches.length) {\n                matches = highlightMatches(query, matches);\n            }\n\n            if (offset === 0 && matches.length) {\n                replaceListData(matches);\n                utils.addClass(barq.list.firstChild, classNames.activeItem);\n            } else {\n                insertDataOnList(matches);\n            }\n\n            return matches;\n        };\n\n        /**\n         * @function filterList\n         * Filters the list (string) based on a search query and returns an array of matches.\n         *\n         * @param {String} [query] The search query to base the filtering against\n         * @returns {Array} An array of matches\n         */\n        var filterList = function(query) {\n            // Matches all list elements by default (for no query cases)\n            var matchingRegex = /<li[^<]*<\\/li>/gi;\n\n            // We create a dynamic regex based on the search query, if any\n            if (query !== '') {\n                // Escape some special characters to prevent breaking the dynamic regex\n                query = utils.escapeString(query);\n                matchingRegex = new RegExp('<li[^>]*>[^<]*' + query + '[^<]*<\\/li>', 'gi');\n            }\n\n            return barq.itemsHTML.match(matchingRegex) || [];\n        };\n\n        /**\n         * @function highlightMatches\n         * Highlights the matches on a search by encapsulating in an <em> tag.\n         *\n         * @param {String} query The search query to highlight\n         * @param {Array} matches The array of matches to look through\n         * @returns {String} An updated string with the matches (<li> items) encapsulates in <em> tags\n         */\n        var highlightMatches = function(query, matches) {\n            // Escapes the string so we get rid of special characters\n            query = utils.escapeString(query);\n\n            var highlightRegex = new RegExp('(<li[^>]*>[^<]*)(' + query + ')([^<]*<\\/li>)', 'gi');\n            var formattedMatch = '$1<em class=\"' + classNames.match + '\">$2</em>$3';\n\n            return matches.replace(highlightRegex, formattedMatch);\n        };\n\n        /**\n         * @function noResultsFound\n         * Creates an <li> item containing a \"no results\" message and inserts it into the list.\n         */\n        var noResultsFound = function() {\n            // A bit lame for templating, I know, but it's the only place needed\n            var template = '<li class=\"0\">1</li>';\n            var item = template.replace('0', classNames.noResults)\n                               .replace('1', barq.options.noResultsMessage);\n\n            replaceListData(item);\n        };\n\n        /**\n         * @function paginate\n         * Calculates where to start fetching the next set of items.\n         * It is based on having an item on the viewport, there might be more elegant solutions out there.\n         *\n         * @returns {Integer} The index from where to start fetching results from\n         */\n        barq.paginate = function() {\n\n            // Stores the previsouly fetched elements\n            var visibleItems = barq.list.children;\n\n            // Pagination is triggered when scrolling reaches the second last item.\n            // This way we don't require the user to scroll down all the way (one pixel could\n            // prevent triggering the pagination).\n            // TODO: store this threshold more elegantly\n            var paginationThreshold = visibleItems.length - 2;\n\n            // Not enough elements to require pagination\n            if (paginationThreshold < 0) {\n                return -1;\n            // When the scroll reaches the pagination threshold, we fetch the next resultset\n            } else if (utils.isElementOnViewport(visibleItems[paginationThreshold])) {\n\n                // Keep track of the pagination\n                currentPage++;\n\n                // Returns the index to start fetching results from\n                return (currentPage * barq.options.resultsPerPage);\n            }\n        };\n\n        /**\n         * @function getActiveListItem\n         * Gets the active list item. Used on keyboard navigation.\n         * @returns {HTMLLIElement}\n         */\n        barq.getActiveListItem = function() {\n            return barq.list.querySelector('.' + classNames.activeItem);\n        };\n\n        /**\n         * @function keyboardNavigate\n         * Navigates up and down through the list, so we can select an item using a keyboard only.\n         * @param {Integer} keyPressed The key pressed, either UP (38) or DOWN (40)\n         */\n        var keyboardNavigate = function(keyPressed) {\n            // The stored search results\n            var items = barq.currentItemsDOM;\n\n            // No need to navigate if there's only one item in the list\n            if (items.length <= 1) {\n                return;\n            }\n\n            // Stores the currently active item\n            var activeItem = barq.getActiveListItem();\n\n            // Next item in line to be activated\n            var itemToActivate;\n\n            // Prevent looping from first to last / last to first\n            if (keyPressed === KEYCODES.UP) {\n                // Actives the previous item only if it's not the first item of the list\n                if (activeItem.previousElementSibling) {\n                    itemToActivate = activeItem.previousElementSibling;\n                }\n            } else {\n                // Don't activate the next item if it's the last one\n                if (activeItem.nextElementSibling) {\n                    itemToActivate = activeItem.nextElementSibling;\n                }\n            }\n\n            if (itemToActivate) {\n                // Removes the active class from the currently active item\n                utils.removeClass(activeItem, classNames.activeItem);\n\n                // Applies the active class on the new item\n                utils.addClass(itemToActivate, classNames.activeItem);\n\n                // Scrolls the list to show the item\n                barq.scrollListItemIntoView(itemToActivate);\n            }\n        };\n\n        /**\n         * @function scrollListItemIntoView\n         * Calculates the position of an item and scroll the list to it. Used on keyboard navigation.\n         * @param {HTMLLIElement} item The item to base the scrolling on.\n         */\n        barq.scrollListItemIntoView = function(item) {\n            // Stores the item `top` position on the list\n            var itemTop = item.offsetTop;\n\n            // Stores the active item `height`\n            var itemHeight = item.offsetHeight;\n\n            // Stores the list height\n            var listHeight = barq.list.offsetHeight;\n\n            // Stores the scroll position of the list\n            var listScroll = barq.list.scrollTop;\n\n            // Check if the item is BEFORE the list scroll area (visible elements)\n            var itemIsBeforeScrollArea = itemTop <= listScroll;\n\n            // Check if the item is AFTER the list scroll area (visible elements)\n            var itemIsAfterScrollArea = itemTop >= ((listScroll + listHeight) - itemHeight);\n\n            if (itemIsBeforeScrollArea) {\n                // Scroll the list UP to show the active item on top\n                barq.list.scrollTop = itemTop;\n            } else if (itemIsAfterScrollArea) {\n                // Scrolls the list DOWN to show the active item on bottom\n                barq.list.scrollTop = (itemTop - listHeight) + itemHeight;\n            }\n\n            // ^ simply don't scroll otherwise.\n        };\n\n        /**\n         * @function setupEvents\n         * Just a basic events wrapper. Sets up all non-dynamic, initial events.\n         */\n        var setupEvents = function() {\n\n            // TODO: Split the keyup logic into external functions\n            utils.addEventListener(barq.textInput, 'keyup', function(e) {\n                // Cross browser event object capturing\n                e = e || win.event;\n\n                // Cross browser key code capturing\n                var keyPressed = e.keyCode || e.which;\n\n                // Filter out navigation keys\n                var isNavigationKey = false;\n                for (var key in KEYCODES) {\n                    if (keyPressed === KEYCODES[key]) {\n                        isNavigationKey = true;\n                        break;\n                    }\n                }\n\n                // Any key, except navigation keys like arrows, home, end, enter, esc...\n                if (!isNavigationKey) {\n                    // Scrolls the list to the top, as we are filtering\n                    barq.list.scrollTop = 0;\n\n                    // Resets the pagination\n                    currentPage = 0;\n\n                    var matches = barq.search(this.value);\n\n                    if (matches.length < 1) {\n                        noResultsFound();\n                        barq.currentItemsDOM = null;\n                    }\n\n                    barq.showList();\n\n                    return;\n                }\n\n                // ENTER selects the active list item\n                if (keyPressed === KEYCODES.ENTER) {\n                    var activeItem = barq.getActiveListItem();\n\n                    if (activeItem) {\n                        barq.selectItem(activeItem);\n                    }\n\n                    return;\n                }\n\n                // ESC closes the auto complete list\n                if (keyPressed === KEYCODES.ESC) {\n                    barq.hideList();\n                    return;\n                }\n            });\n\n            utils.addEventListener(barq.textInput, 'keydown', function(e) {\n                // Cross browser event object capturing\n                e = e || win.event;\n\n                // Cross browser key code capturing\n                var keyPressed = e.keyCode || e.which;\n\n                // UP or DOWN arrows navigate through the list\n                if (keyPressed === KEYCODES.UP || keyPressed === KEYCODES.DOWN) {\n                    // Navigate only if there are results\n                    if (barq.currentItemsDOM) {\n                        keyboardNavigate(keyPressed);\n                    }\n                }\n            });\n\n            // Focusing on the input opens up the items list\n            utils.addEventListener(barq.textInput, 'focus', function() {\n                var matches = barq.search(this.value);\n\n                if (matches.length < 1) {\n                    noResultsFound();\n                    barq.currentItemsDOM = null;\n                }\n\n                barq.showList();\n            });\n\n            // Selects the active item in case of pressing tab or leaving the field\n            utils.addEventListener(barq.textInput, 'blur', function() {\n                if (!barq.preventBlurTrigger && barq.getActiveListItem()) {\n                    barq.selectItem(barq.getActiveListItem());\n                }\n            });\n\n            // Pagination is triggered onScroll\n            utils.addEventListener(barq.list, 'scroll', function() {\n                if (barq.options.enablePagination) {\n                    var offset = barq.paginate();\n\n                    if (offset >= 0) {\n                        // Fetch the results\n                        barq.search(barq.textInput.value, offset);\n                    }\n                }\n            });\n\n            // We used mousedown instead of click to solve a race condition against blur\n            // http://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event/10653160#10653160\n            utils.addEventListener(barq.list, 'mousedown', function(e) {\n\n                // The mousedown is not enough (although required) to prevent the race\n                // condition, as there is DOM manipultion involved. This nasty trick\n                // takes care of it, but can definitely be improved.\n                barq.preventBlurTrigger = true;\n\n                win.setTimeout(function() {\n                    barq.preventBlurTrigger = false;\n                }, 1);\n\n                // Checks if the click was performed on the highlighted part\n                var item = e.target.className === classNames.match ? e.target.parentNode : e.target;\n\n                // Prevents triggering clicks on the scrollbar & on empty results\n                if (item !== barq.list && item.className !== classNames.noResults) {\n                    barq.selectItem(item);\n                }\n            });\n\n            // TODO: add debounce() from lodash if we keep the resize event\n            utils.addEventListener(win, 'resize', function() {\n                barq.repositionList();\n            });\n        };\n    }; // end win.Barq()\n\n    // Allows for lazy loading of barq instances\n    ;(function() {\n        var lazyLoadBaseFields = doc.querySelectorAll('[data-barq]');\n\n        // Todd Motto goes berserker against [].forEach.call() and I quite agree with his points,\n        // but as a one-way loop that's used only once and needs no manipulation, this does the\n        // trick quite well - http://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/\n        [].forEach.call(lazyLoadBaseFields, function(baseField) {\n            new win.Barq(baseField).init();\n        });\n    })(); // end lazy load\n\n})(window, document);\n",
 			"file": "barq.js",
-			"file_size": 33677,
-			"file_write_time": 130625442490000000,
 			"settings":
 			{
-				"buffer_size": 33662,
+				"buffer_size": 33675,
 				"line_ending": "Unix"
 			}
 		},
@@ -338,7 +335,7 @@
 			"file": "barq.css",
 			"settings":
 			{
-				"buffer_size": 1113,
+				"buffer_size": 1182,
 				"line_ending": "Unix"
 			}
 		},
@@ -902,7 +899,7 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -911,15 +908,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 33662,
+						"buffer_size": 33675,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								794,
-								794
+								32178,
+								32178
 							]
 						],
 						"settings":
@@ -927,26 +924,6 @@
 							"BracketHighlighterBusy": false,
 							"bh_regions":
 							[
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_double_quote_content",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close",
-								"bh_single_quote_content",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_c_define_content",
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_regex_content",
 								"bh_default",
 								"bh_default_center",
 								"bh_default_open",
@@ -957,11 +934,11 @@
 								"bh_square_open",
 								"bh_square_close",
 								"bh_square_content",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_curly_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
 								"bh_round",
 								"bh_round_center",
 								"bh_round_open",
@@ -972,6 +949,16 @@
 								"bh_unmatched_open",
 								"bh_unmatched_close",
 								"bh_unmatched_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
 								"bh_tag",
 								"bh_tag_center",
 								"bh_tag_open",
@@ -981,14 +968,24 @@
 								"bh_angle_center",
 								"bh_angle_open",
 								"bh_angle_close",
-								"bh_angle_content"
+								"bh_angle_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content"
 							],
 							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 248.0,
+						"translation.y": 12905.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
@@ -1007,8 +1004,8 @@
 						"selection":
 						[
 							[
-								151503,
-								151503
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1016,71 +1013,71 @@
 							"BracketHighlighterBusy": false,
 							"bh_regions":
 							[
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_curly_content",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_c_define_content",
-								"bh_angle",
-								"bh_angle_center",
-								"bh_angle_open",
-								"bh_angle_close",
-								"bh_angle_content",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_round_content",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_double_quote_content",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_square_content",
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_regex_content",
-								"bh_unmatched",
-								"bh_unmatched_center",
-								"bh_unmatched_open",
-								"bh_unmatched_close",
-								"bh_unmatched_content",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close",
-								"bh_single_quote_content",
 								"bh_default",
 								"bh_default_center",
 								"bh_default_open",
 								"bh_default_close",
 								"bh_default_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
 								"bh_tag",
 								"bh_tag_center",
 								"bh_tag_open",
 								"bh_tag_close",
-								"bh_tag_content"
+								"bh_tag_content",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_angle_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content"
 							],
 							"syntax": "Packages/HTML/HTML.tmLanguage",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 37398.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -1089,15 +1086,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1113,
+						"buffer_size": 1182,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								911,
-								911
+								1017,
+								1017
 							]
 						],
 						"settings":
@@ -1105,31 +1102,26 @@
 							"BracketHighlighterBusy": false,
 							"bh_regions":
 							[
-								"bh_tag",
-								"bh_tag_center",
-								"bh_tag_open",
-								"bh_tag_close",
-								"bh_tag_content",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_double_quote_content",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_curly_content",
-								"bh_angle",
-								"bh_angle_center",
-								"bh_angle_open",
-								"bh_angle_close",
-								"bh_angle_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
 								"bh_c_define",
 								"bh_c_define_center",
 								"bh_c_define_open",
 								"bh_c_define_close",
 								"bh_c_define_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
 								"bh_unmatched",
 								"bh_unmatched_center",
 								"bh_unmatched_open",
@@ -1140,36 +1132,41 @@
 								"bh_regex_open",
 								"bh_regex_close",
 								"bh_regex_content",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_square_content",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_default_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_angle_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
 								"bh_single_quote",
 								"bh_single_quote_center",
 								"bh_single_quote_open",
 								"bh_single_quote_close",
-								"bh_single_quote_content",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_round_content"
+								"bh_single_quote_content"
 							],
 							"syntax": "Packages/CSS/CSS.tmLanguage",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 398.0,
+						"translation.y": 91.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -1250,7 +1247,9 @@
 								"bh_round_close",
 								"bh_round_content"
 							],
-							"syntax": "Packages/Markdown/Markdown.tmLanguage"
+							"syntax": "Packages/Markdown/Markdown.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 1096.0,
@@ -1345,7 +1344,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -1450,8 +1449,8 @@
 						"selection":
 						[
 							[
-								402,
-								402
+								322,
+								322
 							]
 						],
 						"settings":
@@ -1459,26 +1458,6 @@
 							"BracketHighlighterBusy": false,
 							"bh_regions":
 							[
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_double_quote_content",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close",
-								"bh_single_quote_content",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_c_define_content",
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_regex_content",
 								"bh_default",
 								"bh_default_center",
 								"bh_default_open",
@@ -1489,11 +1468,11 @@
 								"bh_square_open",
 								"bh_square_close",
 								"bh_square_content",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_curly_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
 								"bh_round",
 								"bh_round_center",
 								"bh_round_open",
@@ -1504,6 +1483,16 @@
 								"bh_unmatched_open",
 								"bh_unmatched_close",
 								"bh_unmatched_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
 								"bh_tag",
 								"bh_tag_center",
 								"bh_tag_open",
@@ -1513,7 +1502,17 @@
 								"bh_angle_center",
 								"bh_angle_open",
 								"bh_angle_close",
-								"bh_angle_content"
+								"bh_angle_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content"
 							],
 							"syntax": "Packages/JavaScript/JSON.tmLanguage",
 							"tab_size": 2,
@@ -1523,7 +1522,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
