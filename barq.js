@@ -27,22 +27,6 @@
 
         barq.options = {
             /**
-             * enablePagination
-             * @type {Boolean}
-             *
-             * Fetches the matches with a limit. Specially useful for large resultsets.
-             */
-            enablePagination: opts.enablePagination || true,
-
-            /**
-             * resultsPerPage
-             * @type {Integer}
-             *
-             * Number of list items to fetch per page.
-             */
-            resultsPerPage: opts.resultsPerPage || 50,
-
-            /**
              * removeFirstOptionFromSearch
              * @type {Boolean}
              *
@@ -174,14 +158,6 @@
             E_ALREADY_INSTANTIATED: 'Instance already exists.'
         };
 
-        /**
-         *  currentPage
-         *  @type {Integer}
-         *
-         *  Pagination counter
-         */
-        var currentPage = 0;
-
         // A few tiny crossbrowser DOM utilities so we can drop jQuery
         var utils = {
             addEventListener: function(el, eventName, handler) {
@@ -211,17 +187,6 @@
 
             getTextNode: function(node) {
                 return (node && (node.innerText || node.textContent || node.innerHTML));
-            },
-
-            isElementOnViewport: function(el) {
-                var rect = el.getBoundingClientRect();
-
-                return (
-                    rect.top >= 0 &&
-                    rect.left >= 0 &&
-                    rect.bottom <= (win.innerHeight || doc.documentElement.clientHeight) &&
-                    rect.right <= (win.innerWidth || doc.documentElement.clientWidth)
-                );
             },
 
             escapeString: function(text) {
@@ -269,7 +234,7 @@
             }
 
             // Fills the list element with the items
-            replaceListData(barq.itemsHTML);
+            populateList(barq.itemsHTML);
 
             // DOM representation of the items, useful for programatic selection
             barq.items = barq.list.childNodes;
@@ -514,25 +479,13 @@
         };
 
         /**
-         * @function replaceListData
+         * @function populateList
          * Replaces the items on a list
          *
          * @param {String} data A string containing the <li> items that will replace the current ones.
          */
-        var replaceListData = function(data) {
+        var populateList = function(data) {
             barq.list.innerHTML = data;
-
-            barq.currentItemsDOM = barq.list.childNodes;
-        };
-
-        /**
-         * @function insertDataOnList
-         * Appends data to the end of the list
-         *
-         * @param {String} data A string containing the <li> items to be appended to the list.
-         */
-        var insertDataOnList = function(data) {
-            barq.list.innerHTML += data;
 
             barq.currentItemsDOM = barq.list.childNodes;
         };
@@ -566,41 +519,42 @@
             barq.list.style.width = barq.textInput.offsetWidth + 'px';
         };
 
-        // We search on the items list (string) with `match`, which returns an array of matches.
-        // We `splice` this array to return only a chunk of results, based
-        // on the pagination. We then `join` that chunk, converting it back to a string,
-        // and perform a `replace` to add highlighting.
-        barq.search = function(query, offset) {
-            // An array of matches
-            var matches = filterList(query);
+        /**
+         * @function search
+         * Search for items based on a query. An empty query will return all items in the list.
+         *
+         * @param {String} [query] The search query to base the filtering against
+         * @returns {String|Array} Either a long string or array with the matching items.
+         */
+        barq.search = function(query) {
+            var matchingRegex = '';
 
-            if (barq.options.enablePagination) {
-                offset = offset || 0;
-                var limit = barq.options.resultsPerPage;
-
-                // Gets only a chunk of the results
-                if (offset >= 0) {
-                    matches = matches.splice(offset, limit);
-                }
+            // We create a dynamic regex based on the search query, if any
+            if (query !== '') {
+                // Escape some special characters to prevent breaking the dynamic regex
+                query = utils.escapeString(query);
+                matchingRegex = new RegExp('<li[^>]*>[^<]*' + query + '[^<]*<\/li>', 'gi');
             } else {
-                // Always start from the top of the list if we don't have pagination
-                offset = 0;
+                // Matches all list elements by default
+                matchingRegex = /<li[^<]*<\/li>/gi;
             }
+
+            var matches = barq.itemsHTML.match(matchingRegex) || [];
 
             if (matches.length) {
-                // Stores a DOM representation of the items every time a search is performed
+                // Joins the array of matches into a long HTML string containing all matching items
                 matches = matches.join('');
-            }
 
-            if (query && matches.length) {
-                matches = highlightMatches(query, matches);
-            }
+                // Highlight the items in case there is a query
+                if (query) {
+                    matches = highlightMatches(query, matches);
+                }
 
-            if (offset === 0 && matches.length) {
-                replaceListData(matches);
+                // Populate the list with the matching items
+                populateList(matches);
+
+                // Sets an active class to the first item, to set a start to the keyboard navigation
                 utils.addClass(barq.list.firstChild, classNames.activeItem);
-            } else {
-                insertDataOnList(matches);
             }
 
             return matches;
@@ -613,19 +567,9 @@
          * @param {String} [query] The search query to base the filtering against
          * @returns {Array} An array of matches
          */
-        var filterList = function(query) {
-            // Matches all list elements by default (for no query cases)
-            var matchingRegex = /<li[^<]*<\/li>/gi;
+        // var filterList = function(query) {
 
-            // We create a dynamic regex based on the search query, if any
-            if (query !== '') {
-                // Escape some special characters to prevent breaking the dynamic regex
-                query = utils.escapeString(query);
-                matchingRegex = new RegExp('<li[^>]*>[^<]*' + query + '[^<]*<\/li>', 'gi');
-            }
-
-            return barq.itemsHTML.match(matchingRegex) || [];
-        };
+        // };
 
         /**
          * @function highlightMatches
@@ -655,39 +599,7 @@
             var item = template.replace('0', classNames.noResults)
                                .replace('1', barq.options.noResultsMessage);
 
-            replaceListData(item);
-        };
-
-        /**
-         * @function paginate
-         * Calculates where to start fetching the next set of items.
-         * It is based on having an item on the viewport, there might be more elegant solutions out there.
-         *
-         * @returns {Integer} The index from where to start fetching results from
-         */
-        barq.paginate = function() {
-
-            // Stores the previsouly fetched elements
-            var visibleItems = barq.list.children;
-
-            // Pagination is triggered when scrolling reaches the second last item.
-            // This way we don't require the user to scroll down all the way (one pixel could
-            // prevent triggering the pagination).
-            // TODO: store this threshold more elegantly
-            var paginationThreshold = visibleItems.length - 2;
-
-            // Not enough elements to require pagination
-            if (paginationThreshold < 0) {
-                return -1;
-            // When the scroll reaches the pagination threshold, we fetch the next resultset
-            } else if (utils.isElementOnViewport(visibleItems[paginationThreshold])) {
-
-                // Keep track of the pagination
-                currentPage++;
-
-                // Returns the index to start fetching results from
-                return (currentPage * barq.options.resultsPerPage);
-            }
+            populateList(item);
         };
 
         /**
@@ -807,9 +719,6 @@
                     // Scrolls the list to the top, as we are filtering
                     barq.list.scrollTop = 0;
 
-                    // Resets the pagination
-                    currentPage = 0;
-
                     var matches = barq.search(this.value);
 
                     if (matches.length < 1) {
@@ -875,24 +784,12 @@
                 }
             });
 
-            // Pagination is triggered onScroll
-            utils.addEventListener(barq.list, 'scroll', function() {
-                if (barq.options.enablePagination) {
-                    var offset = barq.paginate();
-
-                    if (offset >= 0) {
-                        // Fetch the results
-                        barq.search(barq.textInput.value, offset);
-                    }
-                }
-            });
-
             // We used mousedown instead of click to solve a race condition against blur
             // http://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event/10653160#10653160
             utils.addEventListener(barq.list, 'mousedown', function(e) {
 
                 // The mousedown is not enough (although required) to prevent the race
-                // condition, as there is DOM manipultion involved. This nasty trick
+                // condition, as there is DOM manipulation involved. This nasty trick
                 // takes care of it, but can definitely be improved.
                 barq.preventBlurTrigger = true;
 
