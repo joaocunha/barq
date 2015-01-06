@@ -21,6 +21,9 @@
   max-height: 210px;
   background-color: white;
 
+  /* Default is bold, matches are regular */
+  font-weight: bold;
+
   /* Avoid double borders with the input */
   border-top: none;
 
@@ -29,9 +32,6 @@
 
   /* Allow for scrolling and paginating */
   overflow: auto;
-
-  /* TODO: add support for RTL */
-  direction: ltr;
 
   /* Initially invisible, JS shows it */
   display: none;
@@ -51,7 +51,7 @@
 }
 
 .barq-match {
-  font-weight: bold;
+  font-weight: normal;
   font-style: normal;
 }
 

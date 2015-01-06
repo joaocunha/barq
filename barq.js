@@ -77,6 +77,14 @@
             noResultsMessage: opts.noResultsMessage || 'No results found.',
 
             /**
+             * isRTL
+             * @type {Boolean}
+             *
+             * If true, adds a 'dir="rtl"' attribute to both the autocomplete input and the list.
+             */
+            isRTL: opts.isRTL || false,
+
+            /**
              * dataSource
              * @type {Array}
              *
@@ -297,6 +305,11 @@
             input.setAttribute('autocorrect', 'off');
             input.setAttribute('spellcheck', 'false');
 
+            // Adds RTL support, if needed
+            if (barq.options.isRTL) {
+                input.setAttribute('dir', 'rtl');
+            }
+
             // Replicates the tabindex from the basefield...
             input.setAttribute('tabindex', barq.baseField.tabIndex);
 
@@ -487,6 +500,11 @@
             var list = doc.createElement('ul');
 
             list.setAttribute('class', classNames.dropdownList);
+
+            // Adds RTL support, if needed
+            if (barq.options.isRTL) {
+                list.setAttribute('dir', 'rtl');
+            }
 
             // Insert the list right after the autocomplete input
             barq.textInput.insertAdjacentHTML('afterend', list.outerHTML);
