@@ -4,6 +4,7 @@
 # OS files
 .DS_Store
 
-
+.sublime-project
+.sublime-workspace
 
 *.min.js
