@@ -6,4 +6,4 @@
 
 .sublime-project
 
-.min.js
+*.min.js
