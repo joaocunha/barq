@@ -2553,7 +2553,7 @@ var json = {"airports":[{"value":"1","text":"Aalborg, Denmark (AAL)"},{"value":"
 
     <script type="text/javascript">
         var select = document.querySelector('#barq');
-        var barq = new Barq(select).init();
+        var barq = new Barq(select, {isRTL: true}).init();
 
         var selectJson = document.createElement('select');
         selectJson.innerHTML = '<option>Select a value</option>';
