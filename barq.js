@@ -593,6 +593,7 @@
         /**
          * @function getActiveListItem
          * Gets the active list item. Used on keyboard navigation.
+         *
          * @returns {HTMLLIElement}
          */
         barq.getActiveListItem = function() {
@@ -602,6 +603,7 @@
         /**
          * @function keyboardNavigate
          * Navigates up and down through the list, so we can select an item using a keyboard only.
+         *
          * @param {Integer} keyPressed The key pressed, either UP (38) or DOWN (40)
          */
         var keyboardNavigate = function(keyPressed) {
@@ -647,6 +649,7 @@
         /**
          * @function scrollListItemIntoView
          * Calculates the position of an item and scroll the list to it. Used on keyboard navigation.
+         *
          * @param {HTMLLIElement} item The item to base the scrolling on.
          */
         barq.scrollListItemIntoView = function(item) {
@@ -794,7 +797,7 @@
                 }
             });
 
-            // TODO: add debounce() from lodash if we keep the resize event
+            // TODO: consider debounce() from lodash if we keep the resize event
             utils.addEventListener(win, 'resize', function() {
                 barq.repositionList();
             });
