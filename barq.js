@@ -7,7 +7,7 @@
  *
  * @author João Cunha - joao@joaocunha.net - twitter.com/@joaocunha
  *
- * Thanks to all contributors, specially @bhappyz, @ghostavio, @kumailht and @gxx
+ * Thanks to all contributors.
  */
 
 ;(function(win, doc, undefined) {
@@ -103,11 +103,8 @@
             // The <ul> element that holds all search results
             dropdownList: 'barq-list',
 
-            // The text input to perform the searches on
-            textInput: 'barq-text-input',
-
-            // Vanity class to style the input when the list is currently being displayed
-            textInputWithList: 'barq-input-text-expanded',
+            // The input to perform the searches on
+            input: 'barq-input',
 
             // Utility class for hiding the list
             hidden: 'barq-hidden',
@@ -124,8 +121,11 @@
             // Wrapper div to base the list position on
             wrapper: 'barq-wrapper',
 
+            // For styling elements based on when the list is currently being displayed
+            listOpen: 'barq-wrapper--list-open',
+
             // Changes the vertical orientation of the list
-            showAbove: 'barq-list-above',
+            showAbove: 'barq-list--show-above',
 
             // Styles text matches on a search (as in 'Heat<em class="barq-match">hro</em>w Airport')
             match: 'barq-match'
@@ -220,16 +220,16 @@
                 throw new BarqException(ERROR_MESSAGES.E_ALREADY_INSTANTIATED);
             }
 
-            // Hides the base field ASAP, as it's gonna be replaced by the autocomplete text input.
+            // Hides the base field ASAP, as it's gonna be replaced by the autocomplete input.
             // We don't remove the base element as it holds the `name` attribute and values,
-            // so it's useful in case of form submission.
-            utils.addClass(barq.baseField, classNames.hidden);
+            // so a form submission will work as expected.
+            barq.baseField.style.display = 'none';
 
             // Creates a wrapper to hold the elements for styling purposes
             barq.wrapper = createWrapper();
 
-            // Creates the main text input that's gonna be used as an autocomplete
-            barq.textInput = createTextInput();
+            // Creates the main input that's gonna be used as an autocomplete
+            barq.input = createInput();
 
             // Creates the empty <ul> element to hold the list items
             barq.list = createEmptyList();
@@ -287,16 +287,16 @@
         };
 
         /**
-         * @function createTextInput
-         * Creates the auto complete text input that replaces the original select element.
+         * @function createInput
+         * Creates the autocomplete input that replaces the original select element.
          *
-         * @returns {HTMLInputElement} The newly-created text input
+         * @returns {HTMLInputElement} The newly-created input
          */
-        var createTextInput = function() {
+        var createInput = function() {
             var input = doc.createElement('input');
 
             // Only one class ATM, no need for fancy pants .addClass()
-            input.setAttribute('class', classNames.textInput);
+            input.setAttribute('class', classNames.input);
 
             // Prevents some HTML5 trickery to mess with our stuff
             input.setAttribute('autocapitalize', 'off');
@@ -333,7 +333,7 @@
 
         /**
          * @function initialSelection
-         * Extends the "selected" property behavior to the autocomplete text input.
+         * Extends the "selected" property behavior to the autocomplete input.
          *
          * @returns {HTMLOptionElement|Null} The pre-selected <option> element, or null
          */
@@ -430,8 +430,8 @@
             // Makes sure to position the list properly everytime it is shown
             barq.repositionList();
 
-            // Adds a vanity class to the input
-            utils.addClass(barq.textInput, classNames.textInputWithList);
+            // Adds a vanity class to the wrapper
+            utils.addClass(barq.wrapper, classNames.listOpen);
 
             // Sets the first item as active, so we can start our navigation from there
             if (barq.list.firstChild.className !== classNames.noResults) {
@@ -447,8 +447,8 @@
             // Hides the list
             utils.removeClass(barq.list, classNames.visible);
 
-            // Removes the vanity class from the text input
-            utils.removeClass(barq.textInput, classNames.textInputWithList);
+            // Removes the vanity class from the wrapper
+            utils.removeClass(barq.wrapper, classNames.listOpen);
         };
 
         /**
@@ -461,7 +461,7 @@
             var selectedText = utils.getTextNode(item);
 
             // Sets the selected item's text on the input
-            barq.textInput.value = selectedText;
+            barq.input.value = selectedText;
 
             // Stores the text on barq itself
             barq.text = selectedText;
@@ -494,10 +494,10 @@
             list.setAttribute('class', classNames.dropdownList);
 
             // Insert the list right after the autocomplete input
-            barq.textInput.insertAdjacentHTML('afterend', list.outerHTML);
+            barq.input.insertAdjacentHTML('afterend', list.outerHTML);
 
             // We grab it back from the DOM, as insertAdjecentHTML doesn't return the inserted element
-            return barq.textInput.nextElementSibling;
+            return barq.input.nextElementSibling;
         };
 
         /**
@@ -704,7 +704,7 @@
         var setupEvents = function() {
 
             // TODO: Split the keyup logic into external functions
-            utils.addEventListener(barq.textInput, 'keyup', function(e) {
+            utils.addEventListener(barq.input, 'keyup', function(e) {
                 // Cross browser event object capturing
                 e = e || win.event;
 
@@ -748,14 +748,14 @@
                     return;
                 }
 
-                // ESC closes the auto complete list
+                // ESC closes the autocomplete list
                 if (keyPressed === KEYCODES.ESC) {
                     barq.hideList();
                     return;
                 }
             });
 
-            utils.addEventListener(barq.textInput, 'keydown', function(e) {
+            utils.addEventListener(barq.input, 'keydown', function(e) {
                 // Cross browser event object capturing
                 e = e || win.event;
 
@@ -772,7 +772,7 @@
             });
 
             // Focusing on the input opens up the items list
-            utils.addEventListener(barq.textInput, 'focus', function() {
+            utils.addEventListener(barq.input, 'focus', function() {
                 var matches = barq.search(this.value);
 
                 if (matches.length < 1) {
@@ -784,7 +784,7 @@
             });
 
             // Selects the active item in case of pressing tab or leaving the field
-            utils.addEventListener(barq.textInput, 'blur', function() {
+            utils.addEventListener(barq.input, 'blur', function() {
                 if (!barq.preventBlurTrigger && barq.getActiveListItem()) {
                     barq.selectItem(barq.getActiveListItem());
                 }
