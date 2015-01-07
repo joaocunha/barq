@@ -234,7 +234,7 @@
             }
 
             // Fills the list element with the items
-            populateList(barq.itemsHTML);
+            populateListWithItems(barq.itemsHTML);
 
             // DOM representation of the items, useful for programatic selection
             barq.items = barq.list.childNodes;
@@ -479,12 +479,12 @@
         };
 
         /**
-         * @function populateList
+         * @function populateListWithItems
          * Replaces the items on a list
          *
          * @param {String} data A string containing the <li> items that will replace the current ones.
          */
-        var populateList = function(data) {
+        var populateListWithItems = function(data) {
             barq.list.innerHTML = data;
 
             barq.currentItemsDOM = barq.list.childNodes;
@@ -551,7 +551,7 @@
                 }
 
                 // Populate the list with the matching items
-                populateList(matches);
+                populateListWithItems(matches);
 
                 // Sets an active class to the first item, to set a start to the keyboard navigation
                 utils.addClass(barq.list.firstChild, classNames.activeItem);
@@ -559,17 +559,6 @@
 
             return matches;
         };
-
-        /**
-         * @function filterList
-         * Filters the list (string) based on a search query and returns an array of matches.
-         *
-         * @param {String} [query] The search query to base the filtering against
-         * @returns {Array} An array of matches
-         */
-        // var filterList = function(query) {
-
-        // };
 
         /**
          * @function highlightMatches
@@ -599,7 +588,7 @@
             var item = template.replace('0', classNames.noResults)
                                .replace('1', barq.options.noResultsMessage);
 
-            populateList(item);
+            populateListWithItems(item);
         };
 
         /**
