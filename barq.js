@@ -201,10 +201,9 @@
          * @returns {Object} An instance of Barq itself, containing all public methods & properties.
          */
         barq.init = function() {
+
             // Check for the existance of the base field
-            try {
-                (baseField.tagName.toUpperCase() === 'SELECT');
-            } catch(e) {
+            if (baseField.tagName.toUpperCase() !== 'SELECT') {
                 throw new BarqException(ERROR_MESSAGES.E_BASE_FIELD_NOT_FOUND);
             }
 
