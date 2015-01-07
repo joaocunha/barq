@@ -8,8 +8,6 @@ the developers managing and developing this open source project. In return,
 they should reciprocate that respect in addressing your issue or assessing
 patches and features.
 
-These guidelines were borrowed from the amazing [normalize.css](https://github.com/necolas/normalize.css/blob/master/CONTRIBUTING.md)
-
 ## Using the issue tracker
 
 The [issue tracker](https://github.com/joaocunha/barq/issues) is the preferred channel
@@ -161,3 +159,5 @@ cutting new releases.
 4. Create an annotated tag for the version: `git tag -m "v0.0.0" 0.0.0`.
 5. Push the changes and tags to GitHub: `git push --tags origin master`
 6. Checkout the `gh-pages` branch and follow the instructions in the README.MD.
+
+These guidelines were based on the amazing [normalize.css](https://github.com/necolas/normalize.css/blob/master/CONTRIBUTING.md)
