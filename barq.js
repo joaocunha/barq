@@ -64,7 +64,7 @@
              * isRTL
              * @type {Boolean}
              *
-             * If true, adds a 'dir="rtl"' attribute to both the autocomplete input and the list.
+             * If true, adds a 'dir="rtl"' attribute to the wrapper.
              */
             isRTL: opts.isRTL || false,
 
@@ -121,7 +121,13 @@
             // The item that shows no results
             noResults: 'barq-no-results',
 
-            // Emphasizes a match on a search (like 'Heat<em class="barq-match">hro</em>w Airport')
+            // Wrapper div to base the list position on
+            wrapper: 'barq-wrapper',
+
+            // Changes the vertical orientation of the list
+            showAbove: 'barq-list-above',
+
+            // Styles text matches on a search (as in 'Heat<em class="barq-match">hro</em>w Airport')
             match: 'barq-match'
         };
 
@@ -152,13 +158,13 @@
          * List of error messages for custom exception handling.
          */
         var ERROR_MESSAGES = {
-            E_OPTION_NOT_FOUND: 'No <option> elements found.',
+            E_OPTION_NOT_FOUND: 'No <option> elements found on the passed <select> element.',
             E_BASE_FIELD_NOT_FOUND: 'Missing <select> element on instantiation.',
-            E_INVALID_DATA_SOURCE: 'Invalid data source. Expected an array of objects, JSON style.',
-            E_ALREADY_INSTANTIATED: 'Instance already exists.'
+            E_INVALID_DATA_SOURCE: 'Invalid data source: expected an array of objects, JSON style.',
+            E_ALREADY_INSTANTIATED: 'A barq instance already exists for this <select> element.'
         };
 
-        // A few tiny crossbrowser DOM utilities so we can drop jQuery
+        // A few tiny crossbrowser DOM utilities
         var utils = {
             addEventListener: function(el, eventName, handler) {
                 if (el.addEventListener) {
@@ -219,6 +225,9 @@
             // so it's useful in case of form submission.
             utils.addClass(barq.baseField, classNames.hidden);
 
+            // Creates a wrapper to hold the elements for styling purposes
+            barq.wrapper = createWrapper();
+
             // Creates the main text input that's gonna be used as an autocomplete
             barq.textInput = createTextInput();
 
@@ -252,6 +261,32 @@
         };
 
         /**
+         * @function createWrapper
+         * Wraps the basefield in a div so we can style it properly.
+         */
+        var createWrapper = function() {
+            var wrapper = doc.createElement('div');
+            wrapper.setAttribute('class', classNames.wrapper);
+
+            // Adds RTL support, if needed
+            if (barq.options.isRTL) {
+                wrapper.setAttribute('dir', 'rtl');
+            }
+
+            // Inserts the wrapper in the DOM
+            barq.baseField.insertAdjacentHTML('afterend', wrapper.outerHTML);
+
+            // Updates the wrapper variable to its own live copy after DOM insertion
+            wrapper = barq.baseField.nextElementSibling;
+
+            // Wraps the baseField
+            wrapper.appendChild(barq.baseField);
+
+            // Returns an up-to-date copy of the wrapper
+            return wrapper;
+        };
+
+        /**
          * @function createTextInput
          * Creates the auto complete text input that replaces the original select element.
          *
@@ -268,11 +303,6 @@
             input.setAttribute('autocomplete', 'off');
             input.setAttribute('autocorrect', 'off');
             input.setAttribute('spellcheck', 'false');
-
-            // Adds RTL support, if needed
-            if (barq.options.isRTL) {
-                input.setAttribute('dir', 'rtl');
-            }
 
             // Replicates the tabindex from the basefield...
             input.setAttribute('tabindex', barq.baseField.tabIndex);
@@ -463,11 +493,6 @@
 
             list.setAttribute('class', classNames.dropdownList);
 
-            // Adds RTL support, if needed
-            if (barq.options.isRTL) {
-                list.setAttribute('dir', 'rtl');
-            }
-
             // Insert the list right after the autocomplete input
             barq.textInput.insertAdjacentHTML('afterend', list.outerHTML);
 
@@ -489,31 +514,23 @@
 
         /**
          * @function repositionList
-         * Repositions and resizes the list when viewport size changes.
-         * A good alternative would be tether.js but it weights ~5kb (more than Barq itself) :(
+         * Defines if the list should be shown above or below the
+         * autocomplete input based on the viewport vertical space.
          */
         barq.repositionList = function() {
-            var aboveInputOffset = barq.textInput.offsetTop;
-
-            var belowInputOffset = Math.floor((barq.textInput.offsetTop + parseInt(barq.textInput.offsetHeight, 10)));
-
             var viewportHeight = win.innerHeight || doc.documentElement.clientHeight;
 
-            var topPosition = 0;
+            var listHeight = barq.list.offsetHeight;
+
+            // The bottom part of the wrapper (relative to the viewport)
+            var wrapperBaseline = Math.floor(barq.wrapper.getBoundingClientRect().top) + barq.wrapper.offsetHeight;
 
             // Check if the list would be cut by the viewport
-            if ((belowInputOffset + barq.list.offsetHeight) > viewportHeight) {
-                // Show above
-                topPosition = aboveInputOffset - barq.list.offsetHeight;
+            if (listHeight > (viewportHeight - wrapperBaseline)) {
+                utils.addClass(barq.list, classNames.showAbove);
             } else {
-                // Show below
-                topPosition = belowInputOffset;
+                utils.removeClass(barq.list, classNames.showAbove);
             }
-
-            // Reposition the list accordingly
-            barq.list.style.top = topPosition + 'px';
-            barq.list.style.left = barq.textInput.offsetLeft + 'px';
-            barq.list.style.width = barq.textInput.offsetWidth + 'px';
         };
 
         /**
@@ -793,11 +810,6 @@
                 if (item !== barq.list && item.className !== classNames.noResults) {
                     barq.selectItem(item);
                 }
-            });
-
-            // TODO: consider debounce() from lodash if we keep the resize event
-            utils.addEventListener(win, 'resize', function() {
-                barq.repositionList();
             });
         };
     }; // end win.Barq()

@@ -8,24 +8,52 @@
 
 .barq-text-input {
   border: 1px solid black;
-  display: inline-block;
-  min-width: 300px;
+  display: block;
   padding: 8px;
+  width: 100%;
+  height: 35px;
+}
+
+.barq-wrapper {
+  position: relative;
+}
+
+.barq-wrapper:after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 5px 0 5px;
+  border-color: #333333 transparent transparent transparent;
+  position: absolute;
+  top: 50%;
+  margin-top: -2px;
+  right: 10px;
+  left: auto;
+}
+
+.barq-wrapper[dir="rtl"]:after,
+[dir="rtl"] .barq-wrapper:after {
+  right: auto;
+  left: 10px;
 }
 
 .barq-list {
   list-style-type: none;
   margin: 0;
   padding: 0;
-  border: 1px solid #a8a8a8;
   max-height: 210px;
   background-color: white;
 
   /* Default is bold, matches are regular */
   font-weight: bold;
 
+
   /* Avoid double borders with the input */
   border-top: none;
+  border-right: 1px solid #a8a8a8;
+  border-bottom: 1px solid #a8a8a8;
+  border-left: 1px solid #a8a8a8;
 
   /* Top and Left coords are controled by JS */
   position: absolute;
@@ -38,6 +66,17 @@
 
   /* You might want to keep track of your z-indexes */
   z-index: 666;
+
+  left: 0;
+  right: 0;
+  top: 35px;
+}
+
+.barq-list-above {
+  top: auto;
+  bottom: 35px;
+  border-top: 1px solid #a8a8a8;
+  border-bottom: none;
 }
 
 .barq-list li {
