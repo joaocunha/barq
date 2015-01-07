@@ -375,9 +375,7 @@
             var ds = barq.options.dataSource;
 
             // Checks for the validity of data source
-            try {
-                (ds instanceof Array);
-            } catch(e) {
+            if (!(ds instanceof Array)) {
                 throw new BarqException(ERROR_MESSAGES.E_INVALID_DATA_SOURCE);
             }
 
