@@ -5,7 +5,6 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var notify = require('gulp-notify');
 var browserSync = require('browser-sync');
-var reload = browserSync.reload;
 
 var path = 'barq.js';
 
