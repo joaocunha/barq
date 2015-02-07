@@ -1,6 +1,5 @@
 var gulp = require('gulp');
 var jshint = require('gulp-jshint');
-var map = require('map-stream');
 var jscs = require('gulp-jscs');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
