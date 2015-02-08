@@ -1,4 +1,4 @@
-barq [beta]
+barq [alpha]
 ====
 
 barq is a client-side autocomplete for large datasets.
