@@ -69,14 +69,6 @@
             isRTL: opts.isRTL || false,
 
             /**
-             * dataSource
-             * @type {Array}
-             *
-             * An array of objects to populate the list.
-             */
-            dataSource: opts.dataSource || null,
-
-            /**
              * onload
              * @type {Function}
              *
@@ -154,7 +146,6 @@
         var ERROR_MESSAGES = {
             E_OPTION_NOT_FOUND: 'No <option> elements found.',
             E_BASE_FIELD_NOT_FOUND: 'Missing <select> element on instantiation.',
-            E_INVALID_DATA_SOURCE: 'Invalid data source. Expected an array of objects, JSON style.',
             E_ALREADY_INSTANTIATED: 'Instance already exists.'
         };
 
@@ -225,12 +216,8 @@
             // Creates the empty <ul> element to hold the list items
             barq.list = createEmptyList();
 
-            // Extracts the items from the base field/JSON and stores them in memory as a string representation
-            if (barq.options.dataSource) {
-                barq.itemsHTML = createItemsFromJSON();
-            } else {
-                barq.itemsHTML = createItemsFromBaseField();
-            }
+            // Extracts the items from the base field and stores them in memory as a string representation
+            barq.itemsHTML = createItemsFromBaseField();
 
             // Fills the list element with the items
             populateListWithItems(barq.itemsHTML);
@@ -326,6 +313,7 @@
         var BarqException = function(message) {
             this.message = message;
             this.name = 'BarqException';
+            return;
         };
 
         // Extends the Error type
@@ -360,31 +348,6 @@
             var regex = /<option(?:[^>]*?value="([^"]*?)"|)[^>]*?>(.*?)<\/option>\n?/gi;
             var li = '<li data-value="$1">$2</li>';
             items = items.replace(regex, li);
-
-            return items;
-        };
-
-        /**
-         * @function createItemsFromJSON
-         * Iterates through the JSON and builds a string containing all <li> items.
-         *
-         * @returns {String} A list of <li> items stored in one long string
-         */
-        var createItemsFromJSON = function() {
-            // Simple alias
-            var ds = barq.options.dataSource;
-
-            // Checks for the validity of data source
-            if (!(ds instanceof Array)) {
-                throw new BarqException(ERROR_MESSAGES.E_INVALID_DATA_SOURCE);
-            }
-
-            // Builds a list of concatenated <li> elements
-            var items = '';
-
-            for (var i = 0; i < ds.length; i++) {
-                items += '<li data-value="' + ds[i].value + '">' + ds[i].text + '</li>';
-            }
 
             return items;
         };
