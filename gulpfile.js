@@ -4,6 +4,7 @@ var jscs = require('gulp-jscs');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var notify = require('gulp-notify');
+var browserSync = require('browser-sync');
 
 var path = 'barq.js';
 
@@ -15,11 +16,14 @@ gulp.task('lint', function() {
             message: 'Cheers for sticking to the coding guidelines.',
         }))
         .pipe(jshint())
+        .pipe(jshint.reporter('jshint-stylish'))
         .pipe(notify({
             title: '✔ JSHint passed',
             message: 'Crockford would be proud. Oh, wait.',
         }))
-        .pipe(jshint.reporter('default'));
+        .pipe(browserSync.reload({
+            stream: true
+        }));
 });
 
 gulp.task('compress', function() {
@@ -30,7 +34,29 @@ gulp.task('compress', function() {
         .pipe(rename({
             suffix: '.min'
         }))
-        .pipe(gulp.dest(''));
+        .pipe(gulp.dest(''))
+        .pipe(browserSync.reload({
+            stream: true
+        }));
+});
+
+gulp.task('browser-sync', function() {
+    var files = [
+        './index.html',
+        './barq.css',
+        './barq.js'
+    ];
+    browserSync.init(files, {
+        server: {
+          baseDir: "./"
+        }
+    });
+});
+
+gulp.task('watch', ['lint', 'compress', 'browser-sync'], function() {
+    gulp.watch('./barq.js', ['lint', 'compress']);
 });
 
 gulp.task('build', ['lint', 'compress']);
+
+gulp.task('default', ['lint', 'compress', 'watch']);
