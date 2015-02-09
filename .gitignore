@@ -1,10 +1,9 @@
-# dependencies
+# Dependencies
 /node_modules
 
 # OS files
 .DS_Store
 
+# Sublime Text files
 *.sublime-project
 *.sublime-workspace
-
-*.min.js
