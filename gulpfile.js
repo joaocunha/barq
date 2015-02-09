@@ -29,15 +29,17 @@ gulp.task('lint', function() {
         }));
 });
 
-gulp.task('compress', function() {
+gulp.task('compress:js', function() {
     return gulp.src(paths.src + '/**/*.js')
+        // Add a non-minified copy to the dist folder before compression
+        .pipe(gulp.dest(paths.dist))
         .pipe(uglify({
             preserveComments: 'some'
         }))
         .pipe(rename({
             suffix: '.min'
         }))
-        .pipe(gulp.dest(''))
+        .pipe(gulp.dest(paths.dist))
         .pipe(browserSync.reload({
             stream: true
         }));
@@ -52,9 +54,9 @@ gulp.task('browser-sync', function() {
 });
 
 gulp.task('watch', function() {
-    gulp.watch(paths.src + '/**/*.js', ['lint', 'compress']);
+    gulp.watch(paths.src + '/**/*.js', ['lint', 'compress:js']);
 });
 
-gulp.task('build', ['lint', 'compress']);
+gulp.task('build', ['lint', 'compress:js']);
 
-gulp.task('default', ['lint', 'compress', 'watch']);
+gulp.task('default', ['lint', 'compress:js', 'watch']);

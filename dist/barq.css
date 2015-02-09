@@ -1,0 +1,69 @@
+/* TODO: convert the units to REM */
+
+.barq-text-input, .barq-list {
+  box-sizing: border-box;
+  font-family: arial, sans-serif;
+  font-size: 14px;
+}
+
+.barq-text-input {
+  border: 1px solid black;
+  display: inline-block;
+  min-width: 300px;
+  padding: 8px;
+}
+
+.barq-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #a8a8a8;
+  max-height: 210px;
+  background-color: white;
+
+  /* Default is bold, matches are regular */
+  font-weight: bold;
+
+  /* Avoid double borders with the input */
+  border-top: none;
+
+  /* Top and Left coords are controled by JS */
+  position: absolute;
+
+  /* Allow for scrolling and paginating */
+  overflow: auto;
+
+  /* Initially invisible, JS shows it */
+  display: none;
+
+  /* You might want to keep track of your z-indexes */
+  z-index: 666;
+}
+
+.barq-list li {
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px;
+}
+
+.barq-list li:hover {
+  background-color: #D1D1D1;
+}
+
+.barq-match {
+  font-weight: normal;
+  font-style: normal;
+}
+
+.barq-visible {
+  display: block;
+}
+
+.barq-hidden {
+  display: none;
+}
+
+.barq-active-item {
+  background-color: #44575B;
+  color: #fff;
+}
