@@ -5,6 +5,7 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var notify = require('gulp-notify');
 var browserSync = require('browser-sync');
+var minifyCSS = require('gulp-minify-css');
 
 var paths = {
     src: 'src',
@@ -45,6 +46,17 @@ gulp.task('compress:js', function() {
         }));
 });
 
+gulp.task('compress:css', function() {
+    return gulp.src(paths.src + '/**/*.css')
+        // Add a non-minified copy to the dist folder before compression
+        .pipe(gulp.dest(paths.dist))
+        .pipe(minifyCSS())
+        .pipe(rename({
+            suffix: '.min'
+        }))
+        .pipe(gulp.dest(paths.dist))
+});
+
 gulp.task('browser-sync', function() {
     return browserSync({
         server: {
@@ -55,8 +67,9 @@ gulp.task('browser-sync', function() {
 
 gulp.task('watch', function() {
     gulp.watch(paths.src + '/**/*.js', ['lint', 'compress:js']);
+    gulp.watch(paths.src + '/**/*.css', ['compress:css']);
 });
 
-gulp.task('build', ['lint', 'compress:js']);
+gulp.task('build', ['lint', 'compress:js', 'compress:css']);
 
-gulp.task('default', ['lint', 'compress:js', 'watch']);
+gulp.task('default', ['build', 'watch']);
