@@ -5,11 +5,15 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var notify = require('gulp-notify');
 var browserSync = require('browser-sync');
+var minifyCSS = require('gulp-minify-css');
 
-var path = 'barq.js';
+var paths = {
+    src: 'src',
+    dist: 'dist'
+};
 
 gulp.task('lint', function() {
-    return gulp.src(path)
+    return gulp.src(paths.src + '/**/*.js')
         .pipe(jscs())
         .pipe(notify({
             title: '✔ jscs passed',
@@ -26,37 +30,46 @@ gulp.task('lint', function() {
         }));
 });
 
-gulp.task('compress', function() {
-    return gulp.src(path)
+gulp.task('compress:js', function() {
+    return gulp.src(paths.src + '/**/*.js')
+        // Add a non-minified copy to the dist folder before compression
+        .pipe(gulp.dest(paths.dist))
         .pipe(uglify({
             preserveComments: 'some'
         }))
         .pipe(rename({
             suffix: '.min'
         }))
-        .pipe(gulp.dest(''))
+        .pipe(gulp.dest(paths.dist))
         .pipe(browserSync.reload({
             stream: true
         }));
 });
 
+gulp.task('compress:css', function() {
+    return gulp.src(paths.src + '/**/*.css')
+        // Add a non-minified copy to the dist folder before compression
+        .pipe(gulp.dest(paths.dist))
+        .pipe(minifyCSS())
+        .pipe(rename({
+            suffix: '.min'
+        }))
+        .pipe(gulp.dest(paths.dist))
+});
+
 gulp.task('browser-sync', function() {
-    var files = [
-        './index.html',
-        './barq.css',
-        './barq.js'
-    ];
-    browserSync.init(files, {
+    return browserSync({
         server: {
           baseDir: "./"
         }
     });
 });
 
-gulp.task('watch', ['lint', 'compress', 'browser-sync'], function() {
-    gulp.watch('./barq.js', ['lint', 'compress']);
+gulp.task('watch', function() {
+    gulp.watch(paths.src + '/**/*.js', ['lint', 'compress:js']);
+    gulp.watch(paths.src + '/**/*.css', ['compress:css']);
 });
 
-gulp.task('build', ['lint', 'compress']);
+gulp.task('build', ['lint', 'compress:js', 'compress:css']);
 
-gulp.task('default', ['lint', 'compress', 'watch']);
+gulp.task('default', ['build', 'watch']);
