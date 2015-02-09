@@ -1,23 +1,15 @@
 barq [alpha]
 ====
 
-barq is a client-side autocomplete for large datasets.
-
-## Details
-
-Ideally, the number of options in a drop-down list [shouldn't exceed ~15](http://baymard.com/blog/drop-down-usability) - if that's the case, it's good to use an autocomplete to improve the user experience.
-
-For fields like a country-selector (around 200 elements), there are plenty of client-side libs that do the job quite well. But when it comes to large datasets like in flights and hotels price comparison websites, the only solution so far was to use an autocomplete that fetches data from the server everytime you press a key.
-
-Albeit being light enough to enhance any `<select>` element, that's when barq really excels. By following the old adage "keep DOM manipulation to a minimum", barq's regex powered core is able to filter through elements at lightning-fast speed.
+**barq** is a bare bones autocomplete that does one job very well. If you need fancy features, I recommend Brian Reavis' [selectize.js](https://github.com/brianreavis/selectize.js/).
 
 ## Main features
 
- - **Fast:** mostly single-digit ms operations.
- - **Lightweight:** ~2kb after GZIP.
- - **Accessible:** it progressively enhances a standard `<select>` element.
- - **Library agnostic:** it is written in pure VanillaJS™.
- - **Well supported:** works in IE9+ and all modern browsers, including mobile.
+ - **Fast:** mostly single-digit miliseconds operations.
+ - **Light:** ~2kb after gzip.
+ - **Agnostic:** written in pure VanillaJS™.
+ - **Accessible:** progressively enhances a standard `<select>` element.
+ - **Supportive:** IE9+ and modern browsers, including mobile.
 
 ## Usage
 
