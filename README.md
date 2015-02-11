@@ -1,7 +1,7 @@
 barq [alpha]
 ====
 
-**barq** is a bare bones autocomplete that does one job very well. If you need fancy features, I recommend Brian Reavis' [selectize.js](https://github.com/brianreavis/selectize.js/).
+**barq** is a regex powered, bare bones autocomplete that does one job very well. If you need fancy features, I recommend Brian Reavis' [selectize.js](https://github.com/brianreavis/selectize.js/).
 
 ## Main features
 
@@ -13,7 +13,7 @@ barq [alpha]
 
 ## Usage
 
-### Lazy instance
+### Lazy instance with default options
 ```html
 <!-- The data-barq attribute triggers the instantiation -->
 <select data-barq>
@@ -27,7 +27,7 @@ barq [alpha]
 <script src="barq.min.js"></script>
 ```
 
-### Manual instance + parameters
+### Manual instance + custom options
 ```html
 <!-- No need for data-barq -->
 <select id="guitars">
