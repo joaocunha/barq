@@ -1,4 +1,4 @@
-barq [alpha]
+barq [DEPRECATED - [why?](http://stackoverflow.com/a/1732454/1411163)]
 ====
 
 **barq** is a regex powered, bare bones autocomplete that does one job very well. If you need fancy features, I recommend Brian Reavis' [selectize.js](https://github.com/brianreavis/selectize.js/).
